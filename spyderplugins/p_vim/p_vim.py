@@ -77,6 +77,15 @@ class VimKeys(object):
         self.l()
         self.i()
 
+    # %% Deletions
+
+    # %% Files
+    def ZZ(self, repeat):
+        self._widget.main.editor.save_action.trigger()
+        self._widget.main.editor.close_action.trigger()
+        self._widget.commandline.setFocus()
+
+
 
 # %% Vim commands
 class VimCommands(object):
@@ -86,6 +95,7 @@ class VimCommands(object):
     def __call__(self, cmd):
         if not cmd or cmd.startswith("_"):
             return
+        cmd = cmd.split(None, 1)
         args = cmd[1] if len(cmd) > 1 else ""
         cmd = cmd[0]
 
@@ -96,15 +106,34 @@ class VimCommands(object):
         else:
             method(args)
 
+    # %% Files
     def w(self, args=""):
         self._widget.main.editor.save_action.trigger()
+        self._widget.commandline.setFocus()
 
     def q(self, args=""):
         self._widget.main.editor.close_action.trigger()
+        self._widget.commandline.setFocus()
 
     def wq(self, args=""):
         self.w(args)
         self.q()
+
+    def n(self, args=""):
+        self._widget.main.editor.new_action.trigger()
+        self._widget.commandline.setFocus()
+
+    def e(self, args=""):
+        if not args:  # Revert without asking
+            editor = self._widget.main.editor
+            editorstack = editor.get_current_editorstack()
+            editorstack.reload(editorstack.get_stack_index())
+        elif args == ".":
+            self._widget.main.editor.open_action.trigger()
+        else:
+            print("not implemented")
+
+        self._widget.commandline.setFocus()
 
 
 # %%
