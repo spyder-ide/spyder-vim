@@ -7,7 +7,7 @@ Created on Sat Jan 19 14:57:57 2013
 from __future__ import (
     print_function, unicode_literals, absolute_import, division)
 
-import sys
+import re
 
 from spyderlib.qt.QtGui import QWidget, QLineEdit, QHBoxLayout, QTextCursor
 from spyderlib.qt.QtCore import Qt
@@ -27,12 +27,17 @@ except ImportError:
 from spyderlib.plugins import SpyderPluginMixin
 
 
+VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
+VIM_COMMAND_PREFIX = ":!/?"
+RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}])(.*)$".format(VIM_PREFIX))
+
+
 # %% Vim shortcuts
 class VimKeys(object):
     def __init__(self, widget):
         self._widget = widget
 
-    def __call__(self, key):
+    def __call__(self, key, repeat):
         if key.startswith("_"):
             return
         try:
@@ -40,7 +45,7 @@ class VimKeys(object):
         except AttributeError:
             print("unknown key", key)
         else:
-            method()
+            method(repeat)
 
     def _move_cursor(self, movement):
         editor = self._widget.editor()
@@ -49,26 +54,26 @@ class VimKeys(object):
         editor.setTextCursor(cursor)
 
     # %% Movement
-    def h(self):
+    def h(self, repeat):
         self._move_cursor(QTextCursor.Left)
 
-    def j(self):
+    def j(self, repeat):
         self._move_cursor(QTextCursor.Down)
 
-    def k(self):
+    def k(self, repeat):
         self._move_cursor(QTextCursor.Up)
 
-    def l(self):
+    def l(self, repeat):
         self._move_cursor(QTextCursor.Right)
 
-    def w(self):
+    def w(self, repeat):
         self._move_cursor(QTextCursor.NextWord)
 
     # %% Insertion
-    def i(self):
+    def i(self, repeat):
         self._widget.editor().setFocus()
 
-    def a(self):
+    def a(self, repeat):
         self.l()
         self.i()
 
@@ -79,15 +84,10 @@ class VimCommands(object):
         self._widget = widget
 
     def __call__(self, cmd):
-        if not cmd.startswith(":"):
+        if not cmd or cmd.startswith("_"):
             return
-        cmd = cmd[1:]
-        if cmd.startswith("_"):
-            return
-        try:
-            cmd, args = cmd.split(None, 1)
-        except ValueError:
-            args = ""
+        args = cmd[1] if len(cmd) > 1 else ""
+        cmd = cmd[0]
 
         try:
             method = self.__getattribute__(cmd)
@@ -116,6 +116,7 @@ class VimWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self, parent)
 
+        # Build widget
         self.setWindowTitle("Vim commands")
         self.commandline = QLineEdit(self)
         self.commandline.textChanged.connect(self.on_text_changed)
@@ -125,26 +126,36 @@ class VimWidget(QWidget):
         hlayout1.addWidget(self.commandline)
         self.setLayout(hlayout1)
 
+        # Initialize available commands
         self.vim_keys = VimKeys(self)
         self.vim_commands = VimCommands(self)
 
     def on_text_changed(self, text):
-        if not text:
+        if not text or text[0] in VIM_COMMAND_PREFIX:
             return
-        if not text.startswith(":"):
-            if text.isdigit():
-                return
-            print(text)
-            self.commandline.clear()
-            try:
-                self.vim_keys(text)
-            except KeyError:
-                pass
+        match = RE_VIM_PREFIX.match(text)
+        print(text)
+        if not match:
+            return
+        repeat, key, leftover = match.groups()
+        repeat = int(repeat) if repeat else 1
+        if not repeat:
+            return
+        self.vim_keys(key, repeat)
+        self.commandline.setText(leftover)
 
     def on_return(self):
         text = self.commandline.text()
+        cmd_type = text[0]
         print(text)
-        self.vim_commands(text)
+        if cmd_type == ":":  # Vim command
+            self.vim_commands(text[1:])
+        elif cmd_type == "!":  # Shell command
+            pass
+        elif cmd_type == "/":  # Forward search
+            pass
+        elif cmd_type == "?":  # Reverse search
+            pass
         self.commandline.clear()
 
     def editor(self):
