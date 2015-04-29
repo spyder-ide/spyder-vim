@@ -10,7 +10,7 @@ from __future__ import (
 import sys
 
 from spyderlib.qt.QtGui import QWidget, QLineEdit, QHBoxLayout, QTextCursor
-from spyderlib.qt.QtCore import QEventLoop
+from spyderlib.qt.QtCore import Qt
 
 # Local imports
 # TODO: activate translation
@@ -187,6 +187,13 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
     def register_plugin(self):
         """Register plugin in Spyder's main window"""
         self.main.add_dockwidget(self)
+        vim_command_act = create_action(
+            self.main, _("Vim command mode"),
+            icon=None,
+            triggered=self.commandline.setFocus)
+        self.register_shortcut(vim_command_act, context=Qt.ApplicationShortcut,  # "Editor",
+                               name="Enter vim command mode", default="Esc")
+        self.main.source_menu_actions += [None, vim_command_act]
 
     def apply_plugin_settings(self, options):
         """Needs to be redefined."""
