@@ -30,7 +30,16 @@ from spyderlib.plugins import SpyderPluginMixin
 VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
 VIM_COMMAND_PREFIX = ":!/?"
 RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}])(.*)$".format(VIM_PREFIX))
-
+SYMBOLS_REPLACEMENT = {
+    "!": "EXCLAMATION",
+    "?": "QUESTION",
+    "<": "LESS",
+    ">": "GREATER",
+    "|": "PIPE",
+    " ": "SPACE",
+    "@": "AT",
+    "$": "DOLLAR",
+}
 
 # %% Vim shortcuts
 class VimKeys(object):
@@ -40,6 +49,8 @@ class VimKeys(object):
     def __call__(self, key, repeat):
         if key.startswith("_"):
             return
+        for symbol, text in SYMBOLS_REPLACEMENT.items():
+            key = key.replace(symbol, text)
         try:
             method = self.__getattribute__(key)
         except AttributeError:
@@ -68,6 +79,9 @@ class VimKeys(object):
 
     def w(self, repeat):
         self._move_cursor(QTextCursor.NextWord)
+
+    def SPACE(self, repeat):
+        self._move_cursor(QTextCursor.Right)
 
     # %% Insertion
     def i(self, repeat):
