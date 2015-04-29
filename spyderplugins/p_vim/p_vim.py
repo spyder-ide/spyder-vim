@@ -106,9 +106,6 @@ class VimCommands(object):
         self.w(args)
         self.q()
 
-    def ZZ(self, args=""):
-        self.wq()
-
 
 # %%
 class VimWidget(QWidget):
