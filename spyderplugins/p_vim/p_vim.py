@@ -113,12 +113,15 @@ class VimCommands(object):
         args = cmd[1] if len(cmd) > 1 else ""
         cmd = cmd[0]
 
-        try:
-            method = self.__getattribute__(cmd)
-        except AttributeError:
-            print("unknown command", cmd)
+        if cmd.isdigit():
+            self.NUMBER(cmd)
         else:
-            method(args)
+            try:
+                method = self.__getattribute__(cmd)
+            except AttributeError:
+                print("unknown command", cmd)
+            else:
+                method(args)
 
     # %% Files
     def w(self, args=""):
@@ -148,6 +151,10 @@ class VimCommands(object):
             print("not implemented")
 
         self._widget.commandline.setFocus()
+
+    def NUMBER(self, args=""):
+        editor = self._widget.editor()
+        editor.go_to_line(int(args))
 
 
 # %%
