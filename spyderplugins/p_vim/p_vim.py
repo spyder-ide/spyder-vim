@@ -29,7 +29,7 @@ from spyderlib.plugins import SpyderPluginMixin
 
 VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
 VIM_COMMAND_PREFIX = ":!/?"
-RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}])(.*)$".format(VIM_PREFIX))
+RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}0123456789])(.*)$".format(VIM_PREFIX))
 SYMBOLS_REPLACEMENT = {
     "!": "EXCLAMATION",
     "?": "QUESTION",
@@ -40,6 +40,7 @@ SYMBOLS_REPLACEMENT = {
     "@": "AT",
     "$": "DOLLAR",
 }
+
 
 # %% Vim shortcuts
 class VimKeys(object):
@@ -89,16 +90,65 @@ class VimKeys(object):
 
     def a(self, repeat):
         self.l()
-        self.i()
+        self._widget.editor().setFocus()
+
+    def A(self, repeat):
+        self._move_cursor(QTextCursor.EndOfLine)
+        self._widget.editor().setFocus()
+
+    def o(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine)
+        cursor.insertText("\n")
+        editor.setTextCursor(cursor)
+        editor.setFocus()
+
+    def O(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        cursor.insertText("\n")
+        cursor.movePosition(QTextCursor.Up)
+        editor.setTextCursor(cursor)
+        editor.setFocus()
+
+    # %% Editing
+    def u(self, repeat):
+        for count in repeat:
+            self._widget.editor().undo()
 
     # %% Deletions
+    def dd(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
+        editor.setTextCursor(cursor)
+        editor.cut()
+
+    def D(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
+                            repeat - 1)
+        editor.setTextCursor(cursor)
+        editor.cut()
+
+    def dw(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor,
+                            repeat)
+        editor.setTextCursor(cursor)
+        editor.cut()
 
     # %% Files
     def ZZ(self, repeat):
         self._widget.main.editor.save_action.trigger()
         self._widget.main.editor.close_action.trigger()
         self._widget.commandline.setFocus()
-
 
 
 # %% Vim commands
@@ -215,13 +265,8 @@ class VimWidget(QWidget):
         finfo = editorstack.data[index]
         return finfo.editor
 
-    def move_cursor(self, movement):
-        editor = self.editor()
-        cursor = editor.textCursor()
-        cursor.movePosition(movement)
-        editor.setTextCursor(cursor)
 
-
+# %%
 class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
 
     """Python source code automatic formatting based on autopep8.
