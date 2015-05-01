@@ -9,7 +9,8 @@ from __future__ import (
 
 import re
 
-from spyderlib.qt.QtGui import QWidget, QLineEdit, QHBoxLayout, QTextCursor
+from spyderlib.qt.QtGui import (QWidget, QLineEdit, QHBoxLayout, QTextCursor,
+                                QTextEdit)
 from spyderlib.qt.QtCore import Qt
 
 # Local imports
@@ -207,6 +208,27 @@ class VimCommands(object):
         editor.go_to_line(int(args))
 
 
+class VimLineEdit(QLineEdit):
+
+    def focusInEvent(self, event):
+        QWidget.focusInEvent(self, event)
+        selection = QTextEdit.ExtraSelection()
+        back = Qt.white  # selection.format.background().color()
+        fore = Qt.black  # selection.format.foreground().color()
+        selection.format.setBackground(fore)
+        selection.format.setForeground(back)
+        selection.cursor = self.parent().editor().textCursor()
+#        selection.cursor.setPosition(pos1)
+#        self.found_results.append(selection.cursor.blockNumber())
+        selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+        self.parent().editor().set_extra_selections('vim_cursor', [selection])
+        self.parent().editor().update_extra_selections()
+
+    def focusOutEvent(self, event):
+        self.parent().editor().clear_extra_selections('vim_cursor')
+
+
+
 # %%
 class VimWidget(QWidget):
     """
@@ -218,7 +240,7 @@ class VimWidget(QWidget):
 
         # Build widget
         self.setWindowTitle("Vim commands")
-        self.commandline = QLineEdit(self)
+        self.commandline = VimLineEdit(self)
         self.commandline.textChanged.connect(self.on_text_changed)
         self.commandline.returnPressed.connect(self.on_return)
 
