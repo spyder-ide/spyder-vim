@@ -115,7 +115,7 @@ class VimKeys(object):
 
     # %% Editing
     def u(self, repeat):
-        for count in repeat:
+        for count in range(repeat):
             self._widget.editor().undo()
 
     # %% Deletions
