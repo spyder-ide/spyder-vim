@@ -149,7 +149,7 @@ class VimKeys(object):
     def ZZ(self, repeat):
         self._widget.main.editor.save_action.trigger()
         self._widget.main.editor.close_action.trigger()
-        self._widget.commandline.setFocus()
+        self._widget.setFocus()
 
 
 # %% Vim commands
@@ -177,11 +177,11 @@ class VimCommands(object):
     # %% Files
     def w(self, args=""):
         self._widget.main.editor.save_action.trigger()
-        self._widget.commandline.setFocus()
+        self._widget.setFocus()
 
     def q(self, args=""):
         self._widget.main.editor.close_action.trigger()
-        self._widget.commandline.setFocus()
+        self._widget.setFocus()
 
     def wq(self, args=""):
         self.w(args)
@@ -189,7 +189,7 @@ class VimCommands(object):
 
     def n(self, args=""):
         self._widget.main.editor.new_action.trigger()
-        self._widget.commandline.setFocus()
+        self._widget.setFocus()
 
     def e(self, args=""):
         if not args:  # Revert without asking
@@ -201,14 +201,29 @@ class VimCommands(object):
         else:
             print("not implemented")
 
-        self._widget.commandline.setFocus()
+        self._widget.setFocus()
 
     def NUMBER(self, args=""):
         editor = self._widget.editor()
         editor.go_to_line(int(args))
 
 
-class VimLineEdit(QLineEdit):
+# %%
+class VimWidget(QLineEdit):
+    """
+    Vim widget
+    """
+    def __init__(self, editor_widget):
+        self.editor_widget = editor_widget
+        QLineEdit.__init__(self, editor_widget)
+
+        # Build widget
+        self.textChanged.connect(self.on_text_changed)
+        self.returnPressed.connect(self.on_return)
+
+        # Initialize available commands
+        self.vim_keys = VimKeys(self)
+        self.vim_commands = VimCommands(self)
 
     def focusInEvent(self, event):
         QWidget.focusInEvent(self, event)
@@ -217,40 +232,15 @@ class VimLineEdit(QLineEdit):
         fore = Qt.black  # selection.format.foreground().color()
         selection.format.setBackground(fore)
         selection.format.setForeground(back)
-        selection.cursor = self.parent().editor().textCursor()
+        selection.cursor = self.editor().textCursor()
 #        selection.cursor.setPosition(pos1)
 #        self.found_results.append(selection.cursor.blockNumber())
         selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-        self.parent().editor().set_extra_selections('vim_cursor', [selection])
-        self.parent().editor().update_extra_selections()
+        self.editor().set_extra_selections('vim_cursor', [selection])
+        self.editor().update_extra_selections()
 
     def focusOutEvent(self, event):
-        self.parent().editor().clear_extra_selections('vim_cursor')
-
-
-
-# %%
-class VimWidget(QWidget):
-    """
-    Pylint widget
-    """
-
-    def __init__(self, parent):
-        QWidget.__init__(self, parent)
-
-        # Build widget
-        self.setWindowTitle("Vim commands")
-        self.commandline = VimLineEdit(self)
-        self.commandline.textChanged.connect(self.on_text_changed)
-        self.commandline.returnPressed.connect(self.on_return)
-
-        hlayout1 = QHBoxLayout()
-        hlayout1.addWidget(self.commandline)
-        self.setLayout(hlayout1)
-
-        # Initialize available commands
-        self.vim_keys = VimKeys(self)
-        self.vim_commands = VimCommands(self)
+        self.editor().clear_extra_selections('vim_cursor')
 
     def on_text_changed(self, text):
         if not text or text[0] in VIM_COMMAND_PREFIX:
@@ -264,10 +254,12 @@ class VimWidget(QWidget):
         if not repeat:
             return
         self.vim_keys(key, repeat)
-        self.commandline.setText(leftover)
+        self.setText(leftover)
 
     def on_return(self):
-        text = self.commandline.text()
+        text = self.text()
+        if not text:
+            return
         cmd_type = text[0]
         print(text)
         if cmd_type == ":":  # Vim command
@@ -278,11 +270,11 @@ class VimWidget(QWidget):
             pass
         elif cmd_type == "?":  # Reverse search
             pass
-        self.commandline.clear()
+        self.clear()
 
     def editor(self):
         # Retrieve text of current opened file
-        editorstack = self.main.editor.get_current_editorstack()
+        editorstack = self.editor_widget.get_current_editorstack()
         index = editorstack.get_stack_index()
         finfo = editorstack.data[index]
         return finfo.editor
@@ -299,7 +291,7 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
     CONFIGWIDGET_CLASS = None
 
     def __init__(self, parent):
-        VimWidget.__init__(self, parent=parent)
+        VimWidget.__init__(self, editor_widget=parent.editor)
         SpyderPluginMixin.__init__(self, parent)
         self.initialize_plugin()
 
@@ -314,11 +306,11 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
 
     def register_plugin(self):
         """Register plugin in Spyder's main window"""
-        self.main.add_dockwidget(self)
+        self.editor_widget.layout().addWidget(self)
         vim_command_act = create_action(
             self.main, _("Vim command mode"),
             icon=None,
-            triggered=self.commandline.setFocus)
+            triggered=self.setFocus)
         self.register_shortcut(vim_command_act, context=Qt.ApplicationShortcut,  # "Editor",
                                name="Enter vim command mode", default="Esc")
         self.main.source_menu_actions += [None, vim_command_act]
@@ -335,7 +327,7 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
         Return the widget to give focus to when
         this plugin's dockwidget is raised on top-level
         """
-        return self.commandline
+        return self
 
     def refresh_plugin(self):
         """Refresh widget"""
