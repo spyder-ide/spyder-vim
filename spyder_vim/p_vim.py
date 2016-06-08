@@ -9,8 +9,9 @@ from __future__ import (
 
 import re
 
-from spyderlib.qt.QtGui import QWidget, QLineEdit, QHBoxLayout, QTextCursor
-from spyderlib.qt.QtCore import Qt
+from qtpy.QtWidgets import QWidget, QLineEdit, QHBoxLayout
+from qtpy.QtGui import QTextCursor
+from qtpy.QtCore import Qt
 
 # Local imports
 # TODO: activate translation
