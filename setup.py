@@ -7,12 +7,11 @@ from setuptools import setup, find_packages
 
 
 def readme():
-    return str(open('README.rst').read())
+    return str(open('README.md').read())
 
 
 setup(
     name='spyderplugins.vim',
-    namespace_packages=['spyderplugins'],
     version="0.1.0",
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     keywords=["spyder ide plugin addon vi vim"],
@@ -35,4 +34,5 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Widget Sets'])
