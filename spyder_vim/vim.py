@@ -31,7 +31,7 @@ from spyderlib.plugins import SpyderPluginMixin
 
 VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
 VIM_COMMAND_PREFIX = ":!/?"
-RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}0123456789])(.*)$".format(VIM_PREFIX))
+RE_VIM_PREFIX = re.compile(r"^(\d*)([{0}].|[^{0}123456789])(.*)$".format(VIM_PREFIX))
 SYMBOLS_REPLACEMENT = {
     "!": "EXCLAMATION",
     "?": "QUESTION",
@@ -41,6 +41,7 @@ SYMBOLS_REPLACEMENT = {
     " ": "SPACE",
     "@": "AT",
     "$": "DOLLAR",
+    "0": "ZERO",
 }
 
 
@@ -87,6 +88,12 @@ class VimKeys(object):
 
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
+
+    def DOLLAR(self, repeat=1):
+        self._move_cursor(QTextCursor.EndOfLine)
+
+    def ZERO(self, repeat=1):
+        self._move_cursor(QTextCursor.StartOfLine)
 
     # %% Insertion
     def i(self, repeat):
