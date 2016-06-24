@@ -20,6 +20,7 @@ from qtpy.QtCore import Qt
 #_ = get_translation("p_autopep8", dirname="spyderplugins.autopep8")
 _ = lambda txt: txt
 from spyderlib.utils.qthelpers import create_action
+from spyderlib.config.gui import fixed_shortcut
 try:
     from spyderlib.py3compat import to_text_string
 except ImportError:
@@ -328,13 +329,7 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
     def register_plugin(self):
         """Register plugin in Spyder's main window"""
         self.editor_widget.layout().addWidget(self)
-        vim_command_act = create_action(
-            self.main, _("Vim command mode"),
-            icon=None,
-            triggered=self.commandline.setFocus)
-        self.register_shortcut(vim_command_act, context=Qt.ApplicationShortcut,  # "Editor",
-                               name="Enter vim command mode", default="Esc")
-        self.main.source_menu_actions += [None, vim_command_act]
+        fixed_shortcut("Esc", self.editor_widget, self.commandline.setFocus)
 
     def apply_plugin_settings(self, options):
         """Needs to be redefined."""
