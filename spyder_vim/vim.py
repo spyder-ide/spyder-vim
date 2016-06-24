@@ -329,7 +329,8 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
     def register_plugin(self):
         """Register plugin in Spyder's main window"""
         self.editor_widget.layout().addWidget(self)
-        fixed_shortcut("Esc", self.editor_widget, self.commandline.setFocus)
+        fixed_shortcut("Esc", self.editor_widget.editorsplitter,
+                       self.commandline.setFocus)
 
     def apply_plugin_settings(self, options):
         """Needs to be redefined."""
