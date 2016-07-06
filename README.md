@@ -1,4 +1,5 @@
-# spyderplugins.vim
+# spyder.vim
+
 A plugin for the python IDE Spyder v3.0 to enable vim keybinds.
 
 This plugin is still in development, look at the issues to see what is still missing.
