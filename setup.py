@@ -11,7 +11,7 @@ def readme():
 
 
 setup(
-    name='spyderplugins.vim',
+    name='spyder.vim',
     version="0.1.0",
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     keywords=["spyder ide plugin addon vi vim"],
