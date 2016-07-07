@@ -200,6 +200,7 @@ class VimCommands(object):
     def NUMBER(self, args=""):
         editor = self._widget.editor()
         editor.go_to_line(int(args))
+        self._widget.update_vim_cursor()
 
 
 # %%
