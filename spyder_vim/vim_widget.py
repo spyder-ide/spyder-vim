@@ -7,7 +7,7 @@ import re
 
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy)
-from qtpy.QtGui import QTextCursor
+from qtpy.QtGui import QTextCursor, QApplication
 from qtpy.QtCore import Qt
 
 
@@ -138,6 +138,36 @@ class VimKeys(object):
                             repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+
+    # %% Copy
+    def yy(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
+        text = cursor.selectedText()
+        QApplication.clipboard().setText(text)
+
+    def yw(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.NextWord, QTextCursor.KeepAnchor,
+                            repeat - 1)
+        cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+        text = cursor.selectedText()
+        QApplication.clipboard().setText(text)
+
+    def yDOLLAR(self, repeat):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
+                            repeat)
+        text = cursor.selectedText()
+        QApplication.clipboard().setText(text)
+
+    def p(self, repeat):
+        editor = self._widget.editor()
+        editor.paste()
 
     # %% Files
     def ZZ(self, repeat):
