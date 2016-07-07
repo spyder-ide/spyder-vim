@@ -204,10 +204,16 @@ class VimCommands(object):
 
 # %%
 class VimLineEdit(QLineEdit):
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.clear()
+        else:
+            QLineEdit.keyPressEvent(self, event)
 
     def focusInEvent(self, event):
         QLineEdit.focusInEvent(self, event)
         self.parent().update_vim_cursor()
+        self.clear()
 
     def focusOutEvent(self, event):
         QLineEdit.focusOutEvent(self, event)
