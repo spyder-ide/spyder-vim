@@ -79,6 +79,11 @@ class VimKeys(object):
     def ZERO(self, repeat=1):
         self._move_cursor(QTextCursor.StartOfLine)
 
+    def G(self, repeat):
+        editor = self._widget.editor()
+        editor.go_to_line(repeat)
+        self._widget.update_vim_cursor()
+
     # %% Insertion
     def i(self, repeat):
         self._widget.editor().setFocus()
