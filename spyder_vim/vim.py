@@ -68,6 +68,7 @@ class VimKeys(object):
         cursor = editor.textCursor()
         cursor.movePosition(movement, n=repeat)
         editor.setTextCursor(cursor)
+        self._widget.update_vim_cursor()
 
     # %% Movement
     def h(self, repeat=1):
@@ -223,20 +224,11 @@ class VimCommands(object):
 class VimLineEdit(QLineEdit):
 
     def focusInEvent(self, event):
-        QWidget.focusInEvent(self, event)
-        selection = QTextEdit.ExtraSelection()
-        back = Qt.white  # selection.format.background().color()
-        fore = Qt.black  # selection.format.foreground().color()
-        selection.format.setBackground(fore)
-        selection.format.setForeground(back)
-        selection.cursor = self.parent().editor().textCursor()
-#        selection.cursor.setPosition(pos1)
-#        self.found_results.append(selection.cursor.blockNumber())
-        selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-        self.parent().editor().set_extra_selections('vim_cursor', [selection])
-        self.parent().editor().update_extra_selections()
+        QLineEdit.focusInEvent(self, event)
+        self.parent().update_vim_cursor()
 
     def focusOutEvent(self, event):
+        QLineEdit.focusOutEvent(self, event)
         self.parent().editor().clear_extra_selections('vim_cursor')
 
 
@@ -300,6 +292,18 @@ class VimWidget(QWidget):
         index = editorstack.get_stack_index()
         finfo = editorstack.data[index]
         return finfo.editor
+
+    def update_vim_cursor(self):
+        selection = QTextEdit.ExtraSelection()
+        back = Qt.white  # selection.format.background().color()
+        fore = Qt.black  # selection.format.foreground().color()
+        selection.format.setBackground(fore)
+        selection.format.setForeground(back)
+        selection.cursor = self.editor().textCursor()
+        selection.cursor.movePosition(QTextCursor.Right,
+                                      QTextCursor.KeepAnchor)
+        self.editor().set_extra_selections('vim_cursor', [selection])
+        self.editor().update_extra_selections()
 
 
 # %%
