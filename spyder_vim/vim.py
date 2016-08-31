@@ -11,12 +11,12 @@ from .vim_widget import VimWidget
 
 # Local imports
 # TODO: activate translation
-#from spyderlib.baseconfig import get_translation
+#from spyder.baseconfig import get_translation
 #_ = get_translation("p_autopep8", dirname="spyderplugins.autopep8")
 _ = lambda txt: txt
-from spyderlib.config.gui import fixed_shortcut
+from spyder.config.gui import fixed_shortcut
 
-from spyderlib.plugins import SpyderPluginMixin
+from spyder.plugins import SpyderPluginMixin
 
 
 # %%
