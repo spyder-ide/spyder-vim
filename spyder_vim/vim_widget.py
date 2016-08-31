@@ -6,8 +6,8 @@ from __future__ import (
 import re
 
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
-                            QSizePolicy)
-from qtpy.QtGui import QTextCursor, QApplication
+                            QSizePolicy, QApplication)
+from qtpy.QtGui import QTextCursor
 from qtpy.QtCore import Qt
 
 
