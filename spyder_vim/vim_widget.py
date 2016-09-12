@@ -143,6 +143,7 @@ class VimKeys(object):
                             repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._widget.update_vim_cursor()
 
     # %% Copy
     def yy(self, repeat):
