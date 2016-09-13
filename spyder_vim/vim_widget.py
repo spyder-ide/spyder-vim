@@ -144,6 +144,10 @@ class VimKeys(object):
         editor.setTextCursor(cursor)
         editor.cut()
 
+    def cw(self, repeat):
+        self.dw(repeat)
+        self.i(repeat)
+
     # %% Copy
     def yy(self, repeat):
         editor = self._widget.editor()
