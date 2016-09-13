@@ -118,11 +118,6 @@ class VimKeys(object):
         for count in range(repeat):
             self._widget.editor().undo()
 
-    def cw(self, repeat):
-        self.dw(repeat)
-        self.i(repeat)
-
-
     # %% Deletions
     def dd(self, repeat):
         editor = self._widget.editor()
@@ -148,6 +143,10 @@ class VimKeys(object):
                             repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+
+    def cw(self, repeat):
+        self.dw(repeat)
+        self.i(repeat)
 
     # %% Copy
     def yy(self, repeat):
