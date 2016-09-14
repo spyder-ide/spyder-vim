@@ -126,6 +126,7 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._widget.update_vim_cursor()
 
     def D(self, repeat):
         editor = self._widget.editor()
@@ -135,6 +136,7 @@ class VimKeys(object):
                             repeat - 1)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._widget.update_vim_cursor()
 
     def dw(self, repeat):
         editor = self._widget.editor()
@@ -143,6 +145,7 @@ class VimKeys(object):
                             repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._widget.update_vim_cursor()
 
     def cw(self, repeat):
         self.dw(repeat)
