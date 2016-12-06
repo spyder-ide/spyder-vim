@@ -16,16 +16,16 @@ VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 SYMBOLS_REPLACEMENT = {
-    "!":  "EXCLAMATION",
-    "?":  "QUESTION",
-    "<":  "LESS",
-    ">":  "GREATER",
-    "|":  "PIPE",
-    " ":  "SPACE",
+    "!": "EXCLAMATION",
+    "?": "QUESTION",
+    "<": "LESS",
+    ">": "GREATER",
+    "|": "PIPE",
+    " ": "SPACE",
     "\b": "BACKSPACE",
-    "@":  "AT",
-    "$":  "DOLLAR",
-    "0":  "ZERO",
+    "@": "AT",
+    "$": "DOLLAR",
+    "0": "ZERO",
 }
 
 
@@ -260,6 +260,8 @@ class VimLineEdit(QLineEdit):
             QLineEdit.keyPressEvent(self, event)
 
     def focusInEvent(self, event):
+        QLineEdit.focusInEvent(self, event)
+        self.parent().update_vim_cursor()
         self.setText("h")
 
     def focusOutEvent(self, event):
