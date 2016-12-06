@@ -117,6 +117,7 @@ class VimKeys(object):
     def u(self, repeat):
         for count in range(repeat):
             self._widget.editor().undo()
+        self._widget.update_vim_cursor()
 
     # %% Deletions
     def dd(self, repeat):
@@ -177,9 +178,34 @@ class VimKeys(object):
         text = cursor.selectedText()
         QApplication.clipboard().setText(text)
 
-    def p(self, repeat):
+    def p(self, repeat=1):
+        text = QApplication.clipboard().text()
+        lines = text.splitlines(True)
+        if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
+            self.P(repeat)
+            self.j(repeat)
+        else:
+            self.l(repeat)
+            self.P(repeat)
+
+    def P(self, repeat):
         editor = self._widget.editor()
-        editor.paste()
+        cursor = editor.textCursor()
+        startPosition = cursor.position()
+        text = QApplication.clipboard().text()
+        lines = text.splitlines(True)
+        if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.insertText("\n" + text.rstrip())
+            cursor.setPosition(startPosition)
+            editor.setTextCursor(cursor)
+        elif len(lines) > 1:
+            cursor.insertText(text.strip())
+            cursor.setPosition(startPosition)
+            editor.setTextCursor(cursor)
+            self._widget.update_vim_cursor()
+        else:
+            editor.paste()
 
     # %% Files
     def ZZ(self, repeat):
