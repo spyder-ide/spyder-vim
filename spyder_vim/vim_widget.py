@@ -179,33 +179,50 @@ class VimKeys(object):
         QApplication.clipboard().setText(text)
 
     def p(self, repeat=1):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
         text = QApplication.clipboard().text()
         lines = text.splitlines(True)
         if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
-            self.P(repeat)
-            self.j(repeat)
+            startPosition = cursor.block().position()
+            indentSize = len(text) - len(text.lstrip())
+            text = "\n" + text.rstrip()
+            text *= repeat
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.insertText(text)
+            cursor.setPosition(startPosition)
+            editor.setTextCursor(cursor)
+            self.l(indentSize)
+            self.j()
         else:
-            self.l(repeat)
+            self.l()
             self.P(repeat)
 
     def P(self, repeat):
         editor = self._widget.editor()
         cursor = editor.textCursor()
-        startPosition = cursor.position()
         text = QApplication.clipboard().text()
         lines = text.splitlines(True)
         if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
-            cursor.movePosition(QTextCursor.EndOfLine)
-            cursor.insertText("\n" + text.rstrip())
+            cursor.movePosition(QTextCursor.StartOfLine)
+            startPosition = cursor.position()
+            indentSize = len(text) - len(text.lstrip())
+            text *= repeat
+            cursor.insertText(text)
             cursor.setPosition(startPosition)
             editor.setTextCursor(cursor)
+            self.l(indentSize)
         elif len(lines) > 1:
-            cursor.insertText(text.strip())
+            startPosition = cursor.position()
+            text = text.lstrip()
+            text *= repeat
+            cursor.insertText(text)
             cursor.setPosition(startPosition)
             editor.setTextCursor(cursor)
             self._widget.update_vim_cursor()
         else:
-            editor.paste()
+            for i in range(repeat):
+                editor.paste()
 
     # %% Files
     def ZZ(self, repeat):
