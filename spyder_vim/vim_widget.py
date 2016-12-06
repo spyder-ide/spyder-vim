@@ -90,8 +90,8 @@ class VimKeys(object):
     def ZERO(self, repeat=1):
         self._move_cursor(QTextCursor.StartOfLine)
 
-    def G(self, repeat=0):
-        if not repeat:
+    def G(self, repeat=-1):
+        if repeat == -1:
             self._move_cursor(QTextCursor.End)
         else:
             self.gg(repeat)
@@ -316,7 +316,7 @@ class VimWidget(QWidget):
             # Special case to simplify regexp
             repeat, key, leftover = 1, "0", text[1:]
         elif text.startswith("G"):
-            repeat, key, leftover = 0, "G", text[1:]
+            repeat, key, leftover = -1, "G", text[1:]
         else:
             match = RE_VIM_PREFIX.match(text)
             if not match:
