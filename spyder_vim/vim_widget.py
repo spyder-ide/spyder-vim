@@ -192,7 +192,8 @@ class VimKeys(object):
             cursor.insertText(text)
             cursor.setPosition(startPosition)
             editor.setTextCursor(cursor)
-            self.l(indentSize)
+            if indentSize:
+                self.l(indentSize)
             self.j()
         else:
             self.l()
@@ -211,7 +212,9 @@ class VimKeys(object):
             cursor.insertText(text)
             cursor.setPosition(startPosition)
             editor.setTextCursor(cursor)
-            self.l(indentSize)
+            if indentSize:
+                self.l(indentSize)
+            self._widget.update_vim_cursor()
         elif len(lines) > 1:
             startPosition = cursor.position()
             text = text.lstrip()
