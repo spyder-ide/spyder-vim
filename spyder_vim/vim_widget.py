@@ -16,15 +16,16 @@ VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 SYMBOLS_REPLACEMENT = {
-    "!": "EXCLAMATION",
-    "?": "QUESTION",
-    "<": "LESS",
-    ">": "GREATER",
-    "|": "PIPE",
-    " ": "SPACE",
-    "@": "AT",
-    "$": "DOLLAR",
-    "0": "ZERO",
+    "!":  "EXCLAMATION",
+    "?":  "QUESTION",
+    "<":  "LESS",
+    ">":  "GREATER",
+    "|":  "PIPE",
+    " ":  "SPACE",
+    "\b": "BACKSPACE",
+    "@":  "AT",
+    "$":  "DOLLAR",
+    "0":  "ZERO",
 }
 
 
@@ -72,6 +73,9 @@ class VimKeys(object):
 
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
+
+    def BACKSPACE(self, repeat=1):
+        self._move_cursor(QTextCursor.Left, repeat)
 
     def DOLLAR(self, repeat=1):
         self._move_cursor(QTextCursor.EndOfLine)
@@ -250,13 +254,13 @@ class VimLineEdit(QLineEdit):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.clear()
+        elif event.key() == Qt.Key_Backspace:
+            self.setText(self.text() + "\b")
         else:
             QLineEdit.keyPressEvent(self, event)
 
     def focusInEvent(self, event):
-        QLineEdit.focusInEvent(self, event)
-        self.parent().update_vim_cursor()
-        self.clear()
+        self.setText("h")
 
     def focusOutEvent(self, event):
         QLineEdit.focusOutEvent(self, event)
