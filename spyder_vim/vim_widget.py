@@ -46,10 +46,9 @@ class VimKeys(object):
             method(repeat)
 
     def _move_cursor(self, movement, repeat=1):
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
+        cursor = self._editor_cursor()
         cursor.movePosition(movement, n=repeat)
-        editor.setTextCursor(cursor)
+        self._widget.editor().setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
     def _editor_cursor(self):
@@ -63,7 +62,8 @@ class VimKeys(object):
         cursor = self._editor_cursor()
         if not cursor.atBlockStart():
             self._move_cursor(QTextCursor.Left)
-            if repeat > 1: self.h(repeat-1)
+            if repeat > 1:
+                self.h(repeat-1)
 
     def j(self, repeat=1):
         self._move_cursor(QTextCursor.Down, repeat)
@@ -75,7 +75,8 @@ class VimKeys(object):
         cursor = self._editor_cursor()
         if not cursor.atBlockEnd():
             self._move_cursor(QTextCursor.Right)
-            if repeat > 1: self.l(repeat-1)
+            if repeat > 1:
+                self.l(repeat-1)
 
     def w(self, repeat=1):
         self._move_cursor(QTextCursor.NextWord, repeat)
@@ -89,12 +90,17 @@ class VimKeys(object):
     def ZERO(self, repeat=1):
         self._move_cursor(QTextCursor.StartOfLine)
 
-    def G(self, repeat=1):
-        self._move_cursor(QTextCursor.Start)
-    
+    def G(self, repeat=0):
+        if not repeat:
+            self._move_cursor(QTextCursor.End)
+        else:
+            self.gg(repeat)
+
     def gg(self, repeat=1):
-        self._move_cursor(QTextCursor.End)
-        
+        editor = self._widget.editor()
+        editor.go_to_line(repeat)
+        self._widget.update_vim_cursor()
+
     # %% Insertion
     def i(self, repeat):
         self._widget.editor().setFocus()
