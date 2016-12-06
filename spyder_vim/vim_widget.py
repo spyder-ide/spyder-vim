@@ -262,7 +262,8 @@ class VimLineEdit(QLineEdit):
     def focusInEvent(self, event):
         QLineEdit.focusInEvent(self, event)
         self.parent().update_vim_cursor()
-        self.setText("h")
+        self.parent().vim_keys("h", 1)
+        self.clear()
 
     def focusOutEvent(self, event):
         QLineEdit.focusOutEvent(self, event)
