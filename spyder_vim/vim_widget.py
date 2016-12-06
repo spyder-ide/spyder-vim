@@ -315,6 +315,8 @@ class VimWidget(QWidget):
         if text.startswith("0"):
             # Special case to simplify regexp
             repeat, key, leftover = 1, "0", text[1:]
+        elif text.startswith("G"):
+            repeat, key, leftover = 0, "G", text[1:]
         else:
             match = RE_VIM_PREFIX.match(text)
             if not match:
