@@ -101,7 +101,9 @@ class VimKeys(object):
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.NextBlock, n=repeat)
         text = self._get_line(cursor)
-        if not text.isspace() and text[0].isspace():
+        if text.isspace() or not text:
+            pass
+        elif text[0].isspace():
             cursor.movePosition(QTextCursor.NextWord)
         editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
@@ -170,7 +172,9 @@ class VimKeys(object):
         editor.setTextCursor(cursor)
         editor.cut()
         text = self._get_line(cursor)
-        if not text.isspace() and text[0].isspace():
+        if text.isspace() or not text:
+            pass
+        elif text[0].isspace():
             cursor.movePosition(QTextCursor.NextWord)
         editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
