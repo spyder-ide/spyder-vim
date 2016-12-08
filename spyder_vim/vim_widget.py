@@ -56,7 +56,18 @@ class VimKeys(object):
         editor = self._widget.editor()
         cursor = editor.textCursor()
         return cursor
-        
+
+    def _get_line(self, editor_cursor, lines=1):
+        try:
+            cursor = QTextCursor(editor_cursor)
+            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
+                                n=lines)
+            line = cursor.selectedText()
+            return line
+        except (TypeError, AttributeError):
+            print("ERROR: editor_cursor must be an instance of QTextCursor")
+
     # %% Movement
     def h(self, repeat=1):
         cursor = self._editor_cursor()
@@ -104,7 +115,7 @@ class VimKeys(object):
     # %% Insertion
     def i(self, repeat):
         self._widget.editor().setFocus()
-        
+
     def I(self, repeat):
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
@@ -147,6 +158,10 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+        text = self._get_line(cursor)
+        if not text.isspace() and text[0].isspace():
+            cursor.movePosition(QTextCursor.NextWord)
+        editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
     def D(self, repeat):
@@ -174,11 +189,8 @@ class VimKeys(object):
 
     # %% Copy
     def yy(self, repeat):
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
-        cursor.movePosition(QTextCursor.StartOfLine)
-        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
-        text = cursor.selectedText()
+        cursor = self._editor_cursor()
+        text = self._get_line(cursor, lines=repeat)
         QApplication.clipboard().setText(text)
 
     def yw(self, repeat):
