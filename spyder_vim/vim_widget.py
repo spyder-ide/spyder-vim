@@ -4,6 +4,7 @@ from __future__ import (
     print_function, unicode_literals, absolute_import, division)
 
 import re
+from time import time
 
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy, QApplication)
@@ -56,7 +57,11 @@ class VimKeys(object):
         editor = self._widget.editor()
         cursor = editor.textCursor()
         return cursor
-        
+
+    def _update_selection_type(self, selection_type):
+        cur_time = int(time())
+        self._widget.selection_type = (cur_time, selection_type)
+
     # %% Movement
     def h(self, repeat=1):
         cursor = self._editor_cursor()
@@ -148,6 +153,7 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._update_selection_type("line")
         self._widget.update_vim_cursor()
 
     def D(self, repeat):
@@ -181,6 +187,7 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
         text = cursor.selectedText()
         QApplication.clipboard().setText(text)
+        self._update_selection_type("line")
 
     def yw(self, repeat):
         editor = self._widget.editor()
@@ -199,54 +206,42 @@ class VimKeys(object):
         text = cursor.selectedText()
         QApplication.clipboard().setText(text)
 
-    def p(self, repeat=1):
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
-        text = QApplication.clipboard().text()
-        lines = text.splitlines(True)
-        if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
-            startPosition = cursor.block().position()
-            indentSize = len(text) - len(text.lstrip())
-            text = "\n" + text.rstrip()
-            text *= repeat
-            cursor.movePosition(QTextCursor.EndOfLine)
-            cursor.insertText(text)
-            cursor.setPosition(startPosition)
-            editor.setTextCursor(cursor)
-            if indentSize:
-                self.l(indentSize)
+    def p(self, repeat):
+        if self._widget.selection_type[1] == 'line':
             self.j()
-        else:
+            self.P(repeat)
+        elif self._widget.selection_type[1] == 'char':
             self.l()
             self.P(repeat)
+        else:
+            # TODO: implement pasting block text after implementing visual mode
+            self.P()
 
     def P(self, repeat):
         editor = self._widget.editor()
         cursor = editor.textCursor()
         text = QApplication.clipboard().text()
-        lines = text.splitlines(True)
-        if len(lines) == 1 and text.endswith(('\u2029', '\u2028', '\n', '\r')):
+        lines = text.splitlines()
+        if self._widget.selection_type[1] == 'line':
+            text *= repeat
+            startBlockPosition = cursor.block().position()
             cursor.movePosition(QTextCursor.StartOfLine)
-            startPosition = cursor.position()
-            indentSize = len(text) - len(text.lstrip())
-            text *= repeat
             cursor.insertText(text)
-            cursor.setPosition(startPosition)
+            cursor.setPosition(startBlockPosition)
+            if lines[0].strip():
+                cursor.movePosition(QTextCursor.NextWord)
             editor.setTextCursor(cursor)
-            if indentSize:
-                self.l(indentSize)
-            self._widget.update_vim_cursor()
-        elif len(lines) > 1:
+        elif self._widget.selection_type[1] == 'char':
             startPosition = cursor.position()
-            text = text.lstrip()
-            text *= repeat
-            cursor.insertText(text)
-            cursor.setPosition(startPosition)
-            editor.setTextCursor(cursor)
-            self._widget.update_vim_cursor()
-        else:
             for i in range(repeat):
                 editor.paste()
+            if len(lines) > 1:
+                cursor.setPosition(startPosition)
+                editor.setTextCursor(cursor)
+        else:
+            # TODO: implement pasting block text after implementing visual mode
+            pass
+        self._widget.update_vim_cursor()
 
     # %% Files
     def ZZ(self, repeat):
@@ -349,6 +344,8 @@ class VimWidget(QWidget):
         hlayout.addWidget(self.commandline)
         hlayout.setContentsMargins(1, 1, 1, 1)
         self.setLayout(hlayout)
+        self.selection_type = (int(time()), "char")
+        QApplication.clipboard().dataChanged.connect(self.on_copy)
 
         # Initialize available commands
         self.vim_keys = VimKeys(self)
@@ -387,6 +384,11 @@ class VimWidget(QWidget):
         elif cmd_type == "?":  # Reverse search
             pass
         self.commandline.clear()
+
+    def on_copy(self):
+        cur_time = int(time())
+        if cur_time != self.selection_type[0]:
+            self.selection_type = (cur_time, "char")
 
     def editor(self):
         # Retrieve text of current opened file
