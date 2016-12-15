@@ -12,7 +12,7 @@ from qtpy.QtCore import Qt
 
 
 VIM_COMMAND_PREFIX = ":!/?"
-VIM_PREFIX = "cdfFmrtTyzZ@'`\"<>"
+VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 SYMBOLS_REPLACEMENT = {
@@ -46,16 +46,24 @@ class VimKeys(object):
             method(repeat)
 
     def _move_cursor(self, movement, repeat=1):
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
+        cursor = self._editor_cursor()
         cursor.movePosition(movement, n=repeat)
-        editor.setTextCursor(cursor)
+        self._widget.editor().setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
+    def _editor_cursor(self):
+        """returns editor's cursor object"""
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        return cursor
+        
     # %% Movement
     def h(self, repeat=1):
-        # TODO: stop at start of line
-        self._move_cursor(QTextCursor.Left, repeat)
+        cursor = self._editor_cursor()
+        if not cursor.atBlockStart():
+            self._move_cursor(QTextCursor.Left)
+            if repeat > 1:
+                self.h(repeat-1)
 
     def j(self, repeat=1):
         self._move_cursor(QTextCursor.Down, repeat)
@@ -64,8 +72,11 @@ class VimKeys(object):
         self._move_cursor(QTextCursor.Up, repeat)
 
     def l(self, repeat=1):
-        # TODO: stop at end of line
-        self._move_cursor(QTextCursor.Right, repeat)
+        cursor = self._editor_cursor()
+        if not cursor.atBlockEnd():
+            self._move_cursor(QTextCursor.Right)
+            if repeat > 1:
+                self.l(repeat-1)
 
     def w(self, repeat=1):
         self._move_cursor(QTextCursor.NextWord, repeat)
@@ -79,13 +90,23 @@ class VimKeys(object):
     def ZERO(self, repeat=1):
         self._move_cursor(QTextCursor.StartOfLine)
 
-    def G(self, repeat):
+    def G(self, repeat=-1):
+        if repeat == -1:
+            self._move_cursor(QTextCursor.End)
+        else:
+            self.gg(repeat)
+
+    def gg(self, repeat=1):
         editor = self._widget.editor()
         editor.go_to_line(repeat)
         self._widget.update_vim_cursor()
 
     # %% Insertion
     def i(self, repeat):
+        self._widget.editor().setFocus()
+        
+    def I(self, repeat):
+        self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
 
     def a(self, repeat):
@@ -340,6 +361,8 @@ class VimWidget(QWidget):
         if text.startswith("0"):
             # Special case to simplify regexp
             repeat, key, leftover = 1, "0", text[1:]
+        elif text.startswith("G"):
+            repeat, key, leftover = -1, "G", text[1:]
         else:
             match = RE_VIM_PREFIX.match(text)
             if not match:
