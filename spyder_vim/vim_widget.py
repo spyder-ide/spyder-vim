@@ -16,6 +16,11 @@ VIM_COMMAND_PREFIX = ":!/?"
 VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
+
+VIM_VISUAL_OPS = "hjklGyw"
+VIM_VISUAL_PREFIX = "agi"
+RE_VIM_VISUAL_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=
+                                                           VIM_VISUAL_PREFIX))
 SYMBOLS_REPLACEMENT = {
     "!": "EXCLAMATION",
     "?": "QUESTION",
@@ -33,6 +38,8 @@ SYMBOLS_REPLACEMENT = {
 class VimKeys(object):
     def __init__(self, widget):
         self._widget = widget
+        self._prev_cursor = None
+        self.visual_mode = False
 
     def __call__(self, key, repeat):
         if key.startswith("_"):
@@ -52,8 +59,47 @@ class VimKeys(object):
         self._widget.editor().setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
+    def _move_selection(self, pos, move_start=False):
+        """Move visually selected text.
+
+        Positional arguments:
+        pos -- position to move selection
+
+        Keyword arguments:
+        move_start -- set start of selection to pos (default False)
+        """
+        editor = self._widget.editor()
+        selection = editor.get_extra_selections('vim_visual')[0]
+        if self.visual_mode == 'char':
+            if move_start:
+                selection.cursor.setPosition(pos)
+                selection.cursor.setPosition(self._prev_cursor.position(),
+                                             QTextCursor.KeepAnchor)
+            else:
+                selection.cursor.setPosition(self._prev_cursor.position())
+                selection.cursor.setPosition(pos, QTextCursor.KeepAnchor)
+        if self.visual_mode == 'line':
+            prev_cursor_block = self._prev_cursor.block()
+            if move_start:
+                prev_cursor_block = prev_cursor_block.next()
+                selection.cursor.setPosition(pos)
+                selection.cursor.setPosition(prev_cursor_block.position(),
+                                             QTextCursor.KeepAnchor)
+            else:
+                selection.cursor.setPosition(prev_cursor_block.position())
+                selection.cursor.setPosition(pos, QTextCursor.KeepAnchor)
+        editor.set_extra_selections('vim_visual', [selection])
+        editor.update_extra_selections()
+
+    def _get_selection_positions(self):
+        editor = self._widget.editor()
+        selection = editor.get_extra_selections('vim_visual')[0]
+        start = selection.cursor.selectionStart()
+        end = selection.cursor.selectionEnd()
+        return start, end
+
     def _editor_cursor(self):
-        """returns editor's cursor object"""
+        """Return editor's cursor."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         return cursor
@@ -62,29 +108,83 @@ class VimKeys(object):
         cur_time = int(time())
         self._widget.selection_type = (cur_time, selection_type)
 
+    def exit_visual_mode(self):
+        """Exit visual mode."""
+        editor = self._widget.editor()
+        editor.clear_extra_selections('vim_visual')
+        self._widget.update_vim_cursor()
+        self.visual_mode = False
+
     # %% Movement
     def h(self, repeat=1):
         cursor = self._editor_cursor()
         if not cursor.atBlockStart():
+            if self.visual_mode == 'char':
+                prev_cursor_pos = self._prev_cursor.position()
+                start, end = self._get_selection_positions()
+                if cursor.position() > \
+                   prev_cursor_pos:
+                    self._move_selection(end - 1)
+                else:
+                    self._move_selection(start - 1, move_start=True)
             self._move_cursor(QTextCursor.Left)
             if repeat > 1:
                 self.h(repeat-1)
 
     def j(self, repeat=1):
         self._move_cursor(QTextCursor.Down, repeat)
+        cursor = self._editor_cursor()
+        if self.visual_mode == 'char':
+            start, end = self._get_selection_positions()
+            if cursor.position() > end:
+                self._move_selection(cursor.position())
+            else:
+                self._move_selection(cursor.position(), move_start=True)
+        elif self.visual_mode == 'line':
+            start, end = self._get_selection_positions()
+            cur_block = cursor.block()
+            if cursor.position() > end:
+                self._move_selection(cur_block.next().position())
+            else:
+                self._move_selection(cur_block.position(), move_start=True)
 
     def k(self, repeat=1):
         self._move_cursor(QTextCursor.Up, repeat)
+        cursor = self._editor_cursor()
+        if self.visual_mode == 'char':
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
+        elif self.visual_mode == 'line':
+            start, end = self._get_selection_positions()
+            cur_block = cursor.block()
+            if cursor.position() < start:
+                self._move_selection(cur_block.position(), move_start=True)
+            else:
+                self._move_selection(cur_block.next().position())
 
     def l(self, repeat=1):
         cursor = self._editor_cursor()
         if not cursor.atBlockEnd():
+            if self.visual_mode == 'char':
+                prev_cursor_pos = self._prev_cursor.position()
+                start, end = self._get_selection_positions()
+                if cursor.position() >= \
+                   prev_cursor_pos:
+                    self._move_selection(end + 1)
+                else:
+                    self._move_selection(start + 1, move_start=True)
             self._move_cursor(QTextCursor.Right)
             if repeat > 1:
                 self.l(repeat-1)
 
     def w(self, repeat=1):
         self._move_cursor(QTextCursor.NextWord, repeat)
+        if self.visual_mode == 'char':
+            cursor = self._editor_cursor()
+            self._move_selection(cursor.position())
 
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
@@ -98,6 +198,8 @@ class VimKeys(object):
     def G(self, repeat=-1):
         if repeat == -1:
             self._move_cursor(QTextCursor.End)
+            if self.visual_mode:
+                self._move_selection(self._editor_cursor().position())
         else:
             self.gg(repeat)
 
@@ -109,7 +211,7 @@ class VimKeys(object):
     # %% Insertion
     def i(self, repeat):
         self._widget.editor().setFocus()
-        
+
     def I(self, repeat):
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
@@ -139,11 +241,20 @@ class VimKeys(object):
         editor.setTextCursor(cursor)
         editor.setFocus()
 
-    # %% Editing
+    # %% Editing and cases(visual)
     def u(self, repeat):
-        for count in range(repeat):
-            self._widget.editor().undo()
-        self._widget.update_vim_cursor()
+        if not self.visual_mode:
+            for count in range(repeat):
+                self._widget.editor().undo()
+            self._widget.update_vim_cursor()
+        else:
+            # TODO: make selection lowercase
+            pass
+
+    def U(self, repeat):
+        if self.visual_mode:
+            # TODO: make selection uppercase
+            pass
 
     # %% Deletions
     def dd(self, repeat):
@@ -180,6 +291,22 @@ class VimKeys(object):
         self.i(repeat)
 
     # %% Copy
+    def y(self, repeat):
+        editor = self._widget.editor()
+        selection = editor.get_extra_selections('vim_visual')[0]
+        cursor = selection.cursor
+        text = cursor.selectedText()
+        QApplication.clipboard().setText(text)
+        if self.visual_mode == 'char':
+            self._update_selection_type('char')
+        elif self.visual_mode == 'line':
+            self._update_selection_type('line')
+        else:
+            self._update_selection_type('block')
+        editor.setTextCursor(self._prev_cursor)
+        self._move_cursor(QTextCursor.StartOfLine)
+        self.exit_visual_mode()
+
     def yy(self, repeat):
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -249,6 +376,40 @@ class VimKeys(object):
         self._widget.main.editor.close_action.trigger()
         self._widget.commandline.setFocus()
 
+    # %% Visual mode
+    def v(self, repeat):
+        self.visual_mode = 'char'
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        self._prev_cursor = cursor
+        selection = QTextEdit.ExtraSelection()
+        back = Qt.white  # selection.format.background().color()
+        fore = Qt.gray   # selection.format.foreground().color()
+        selection.format.setBackground(fore)
+        selection.format.setForeground(back)
+        selection.cursor = editor.textCursor()
+        editor.set_extra_selections('vim_visual', [selection])
+        editor.update_extra_selections()
+
+    def V(self, repeat):
+        self.visual_mode = 'line'
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        self._prev_cursor = cursor
+        selection = QTextEdit.ExtraSelection()
+        back = Qt.white  # selection.format.background().color()
+        fore = Qt.gray   # selection.format.foreground().color()
+        selection.format.setBackground(fore)
+        selection.format.setForeground(back)
+        selection.cursor = editor.textCursor()
+        selection.cursor.movePosition(QTextCursor.StartOfLine)
+        selection.cursor.movePosition(QTextCursor.Down,
+                                      QTextCursor.KeepAnchor)
+        editor.set_extra_selections('vim_visual', [selection])
+        editor.update_extra_selections()
+
+    # TODO: CTRL + V sets visual mode to 'block'
+
 
 # %% Vim commands
 class VimCommands(object):
@@ -311,6 +472,8 @@ class VimCommands(object):
 class VimLineEdit(QLineEdit):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
+            if self.parent().vim_keys.visual_mode:
+                self.parent().vim_keys.exit_visual_mode()
             self.clear()
         else:
             QLineEdit.keyPressEvent(self, event)
@@ -323,6 +486,8 @@ class VimLineEdit(QLineEdit):
     def focusOutEvent(self, event):
         QLineEdit.focusOutEvent(self, event)
         self.parent().editor().clear_extra_selections('vim_cursor')
+        if self.parent().vim_keys.visual_mode:
+            self.parent().vim_keys.exit_visual_mode()
 
 
 class VimWidget(QWidget):
@@ -361,11 +526,19 @@ class VimWidget(QWidget):
         elif text.startswith("G"):
             repeat, key, leftover = -1, "G", text[1:]
         else:
-            match = RE_VIM_PREFIX.match(text)
+            if self.vim_keys.visual_mode:
+                match = RE_VIM_VISUAL_PREFIX.match(text)
+            else:
+                match = RE_VIM_PREFIX.match(text)
             if not match:
                 return
             repeat, key, leftover = match.groups()
             repeat = int(repeat) if repeat else 1
+        if self.vim_keys.visual_mode and len(key) == 1:
+            if key not in VIM_VISUAL_OPS:
+                print("unknown key")
+                self.commandline.setText(leftover)
+                return
         self.vim_keys(key, repeat)
         self.commandline.setText(leftover)
 
