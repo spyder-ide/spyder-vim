@@ -81,9 +81,9 @@ class VimKeys(object):
         if self.visual_mode == 'line':
             prev_cursor_block = self._prev_cursor.block()
             if move_start:
-                prev_cursor_block = prev_cursor_block.next()
+                next_cursor_block = prev_cursor_block.next()
                 selection.cursor.setPosition(pos)
-                selection.cursor.setPosition(prev_cursor_block.position(),
+                selection.cursor.setPosition(next_cursor_block.position(),
                                              QTextCursor.KeepAnchor)
             else:
                 selection.cursor.setPosition(prev_cursor_block.position())
@@ -143,8 +143,9 @@ class VimKeys(object):
         elif self.visual_mode == 'line':
             start, end = self._get_selection_positions()
             cur_block = cursor.block()
-            if cursor.position() > end:
-                self._move_selection(cur_block.next().position())
+            if cursor.position() >= end:
+                if not cursor.atEnd():
+                    self._move_selection(cur_block.next().position())
             else:
                 self._move_selection(cur_block.position(), move_start=True)
 
