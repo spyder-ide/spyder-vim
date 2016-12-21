@@ -28,6 +28,7 @@ SYMBOLS_REPLACEMENT = {
     ">": "GREATER",
     "|": "PIPE",
     " ": "SPACE",
+    "\b": "BACKSPACE",
     "@": "AT",
     "$": "DOLLAR",
     "0": "ZERO",
@@ -189,6 +190,9 @@ class VimKeys(object):
 
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
+
+    def BACKSPACE(self, repeat=1):
+        self._move_cursor(QTextCursor.Left, repeat)
 
     def DOLLAR(self, repeat=1):
         self._move_cursor(QTextCursor.EndOfLine)
@@ -476,12 +480,14 @@ class VimLineEdit(QLineEdit):
             if self.parent().vim_keys.visual_mode:
                 self.parent().vim_keys.exit_visual_mode()
             self.clear()
+        elif event.key() == Qt.Key_Backspace:
+            self.setText(self.text() + "\b")
         else:
             QLineEdit.keyPressEvent(self, event)
 
     def focusInEvent(self, event):
         QLineEdit.focusInEvent(self, event)
-        self.parent().update_vim_cursor()
+        self.parent().vim_keys.h()
         self.clear()
 
     def focusOutEvent(self, event):
