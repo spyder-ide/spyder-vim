@@ -60,15 +60,17 @@ class VimKeys(object):
         return cursor
 
     def _get_line(self, editor_cursor, lines=1):
+        """Return the line at cursor position."""
         try:
             cursor = QTextCursor(editor_cursor)
+        except TypeError:
+            print("ERROR: editor_cursor must be an instance of QTextCursor")
+        else:
             cursor.movePosition(QTextCursor.StartOfLine)
             cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
                                 n=lines)
             line = cursor.selectedText()
             return line
-        except (TypeError, AttributeError):
-            print("ERROR: editor_cursor must be an instance of QTextCursor")
 
     # %% Movement
     def h(self, repeat=1):
