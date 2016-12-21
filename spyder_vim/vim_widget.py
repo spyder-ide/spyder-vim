@@ -22,8 +22,8 @@ SYMBOLS_REPLACEMENT = {
     ">": "GREATER",
     "|": "PIPE",
     " ": "SPACE",
-    "\r": "RETURN",
     "\b": "BACKSPACE",
+    "\r": "RETURN",
     "@": "AT",
     "$": "DOLLAR",
     "0": "ZERO",
@@ -97,6 +97,9 @@ class VimKeys(object):
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
 
+    def BACKSPACE(self, repeat=1):
+        self._move_cursor(QTextCursor.Left, repeat)
+
     def RETURN(self, repeat=1):
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -108,9 +111,6 @@ class VimKeys(object):
             cursor.movePosition(QTextCursor.NextWord)
         editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
-
-    def BACKSPACE(self, repeat=1):
-        self._move_cursor(QTextCursor.Left, repeat)
 
     def DOLLAR(self, repeat=1):
         self._move_cursor(QTextCursor.EndOfLine)
@@ -302,11 +302,11 @@ class VimLineEdit(QLineEdit):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.clear()
+        elif event.key() == Qt.Key_Backspace:
+            self.setText(self.text() + "\b")
         elif event.key() == Qt.Key_Return:
             self.setText(self.text() + "\r")
             self.parent().on_return()
-        elif event.key() == Qt.Key_Backspace:
-            self.setText(self.text() + "\b")
         else:
             QLineEdit.keyPressEvent(self, event)
 
