@@ -29,6 +29,7 @@ SYMBOLS_REPLACEMENT = {
     "|": "PIPE",
     " ": "SPACE",
     "\b": "BACKSPACE",
+    "\r": "RETURN",
     "@": "AT",
     "$": "DOLLAR",
     "0": "ZERO",
@@ -104,6 +105,19 @@ class VimKeys(object):
         editor = self._widget.editor()
         cursor = editor.textCursor()
         return cursor
+
+    def _get_line(self, editor_cursor, lines=1):
+        """Return the line at cursor position."""
+        try:
+            cursor = QTextCursor(editor_cursor)
+        except TypeError:
+            print("ERROR: editor_cursor must be an instance of QTextCursor")
+        else:
+            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
+                                n=lines)
+            line = cursor.selectedText()
+            return line
 
     def _update_selection_type(self, selection_type):
         cur_time = int(time())
@@ -194,6 +208,18 @@ class VimKeys(object):
     def BACKSPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Left, repeat)
 
+    def RETURN(self, repeat=1):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.NextBlock, n=repeat)
+        text = self._get_line(cursor)
+        if text.isspace() or not text:
+            pass
+        elif text[0].isspace():
+            cursor.movePosition(QTextCursor.NextWord)
+        editor.setTextCursor(cursor)
+        self._widget.update_vim_cursor()
+
     def DOLLAR(self, repeat=1):
         self._move_cursor(QTextCursor.EndOfLine)
 
@@ -270,6 +296,12 @@ class VimKeys(object):
         editor.setTextCursor(cursor)
         editor.cut()
         self._update_selection_type("line")
+        text = self._get_line(cursor)
+        if text.isspace() or not text:
+            pass
+        elif text[0].isspace():
+            cursor.movePosition(QTextCursor.NextWord)
+        editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
     def D(self, repeat):
@@ -313,11 +345,8 @@ class VimKeys(object):
         self.exit_visual_mode()
 
     def yy(self, repeat):
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
-        cursor.movePosition(QTextCursor.StartOfLine)
-        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
-        text = cursor.selectedText()
+        cursor = self._editor_cursor()
+        text = self._get_line(cursor, lines=repeat)
         QApplication.clipboard().setText(text)
         self._update_selection_type("line")
 
@@ -482,6 +511,9 @@ class VimLineEdit(QLineEdit):
             self.clear()
         elif event.key() == Qt.Key_Backspace:
             self.setText(self.text() + "\b")
+        elif event.key() == Qt.Key_Return:
+            self.setText(self.text() + "\r")
+            self.parent().on_return()
         else:
             QLineEdit.keyPressEvent(self, event)
 
