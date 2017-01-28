@@ -204,6 +204,9 @@ class VimKeys(object):
             cursor = self._editor_cursor()
             self._move_selection(cursor.position())
 
+    def b(self, repeat=1):
+        self._move_cursor(QTextCursor.PreviousWord, repeat)
+
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
 
