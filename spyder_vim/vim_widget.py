@@ -176,7 +176,9 @@ class VimKeys(object):
         elif self.visual_mode == 'line':
             start, end = self._get_selection_positions()
             cur_block = cursor.block()
-            if cursor.position() < start:
+            if start == 0:
+                pass
+            elif cursor.position() < start:
                 self._move_selection(cur_block.position(), move_start=True)
             else:
                 self._move_selection(cur_block.next().position())
@@ -238,6 +240,20 @@ class VimKeys(object):
         editor = self._widget.editor()
         editor.go_to_line(repeat)
         self._widget.update_vim_cursor()
+        if self.visual_mode:
+            start, stop = self._get_selection_positions()
+            cursor = self._editor_cursor()
+            cur_block = cursor.block()
+            if cursor.position() < start:
+                if self.visual_mode == 'line':
+                    self._move_selection(cursor.position(), move_start=True)
+                else:
+                    self._move_selection(cur_block.position(), move_start=True)
+            else:
+                if self.visual_mode == 'line':
+                    self._move_selection(cur_block.next().position())
+                else:
+                    self._move_selection(cursor.position())
 
     # %% Insertion
     def i(self, repeat):
