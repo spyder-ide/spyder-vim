@@ -37,8 +37,12 @@ class VimKeys(object):
         self._widget = widget
 
     def __call__(self, key, repeat):
+        leftover = ""
         if key.startswith("_"):
             return
+        elif key[0] in "fF":
+            leftover = key[1]
+            key = key[0]
         for symbol, text in SYMBOLS_REPLACEMENT.items():
             key = key.replace(symbol, text)
         try:
@@ -46,7 +50,10 @@ class VimKeys(object):
         except AttributeError:
             print("unknown key", key)
         else:
-            method(repeat)
+            if leftover:
+                method(leftover, repeat)
+            else:
+                method(repeat)
 
     def _move_cursor(self, movement, repeat=1):
         cursor = self._editor_cursor()
@@ -103,6 +110,34 @@ class VimKeys(object):
 
     def b(self, repeat=1):
         self._move_cursor(QTextCursor.PreviousWord, repeat)
+
+    def f(self, leftover, repeat=1):
+        cursor = self._editor_cursor()
+        cur_pos_in_block = cursor.positionInBlock()
+        text = self._get_line(cursor)[cur_pos_in_block+1:]
+        char_indices = []
+        for i, char in enumerate(text):
+            if char == leftover:
+                char_indices.append(cur_pos_in_block + i + 1)
+        try:
+            index = char_indices[repeat-1]
+            self.l(repeat=index-cur_pos_in_block)
+        except IndexError:
+            pass
+
+    def F(self, leftover, repeat=1):
+        cursor = self._editor_cursor()
+        cur_pos_in_block = cursor.positionInBlock()
+        text = self._get_line(cursor)[:cur_pos_in_block]
+        char_indices = []
+        for i, char in enumerate(text):
+            if char == leftover:
+                char_indices.append(i)
+        try:
+            index = char_indices[-repeat]
+            self.h(repeat=cur_pos_in_block-index)
+        except IndexError:
+            pass
 
     def SPACE(self, repeat=1):
         self._move_cursor(QTextCursor.Right, repeat)
