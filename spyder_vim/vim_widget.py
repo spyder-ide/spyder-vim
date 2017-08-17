@@ -28,6 +28,7 @@ SYMBOLS_REPLACEMENT = {
     "@": "AT",
     "$": "DOLLAR",
     "0": "ZERO",
+    "^": "CARET"
 }
 
 
@@ -127,6 +128,16 @@ class VimKeys(object):
 
     def ZERO(self, repeat=1):
         self._move_cursor(QTextCursor.StartOfLine)
+
+    def CARET(self, repeat=1):
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        text = self._get_line(cursor)
+        if text.strip():
+            start_of_line = len(text) - len(text.lstrip())
+            cursor.setPosition(cursor.block().position() + start_of_line)
+            editor.setTextCursor(cursor)
+            self._widget.update_vim_cursor()
 
     def G(self, repeat=-1):
         if repeat == -1:
