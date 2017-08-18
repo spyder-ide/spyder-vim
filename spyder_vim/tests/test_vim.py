@@ -60,6 +60,7 @@ class MainMock(QWidget):
 
 @pytest.fixture
 def editor_bot(qtbot):
+    """EditorStack pytest fixture."""
     text = ('line 1\n'
             'line 2\n'
             'line 3\n'
@@ -77,6 +78,7 @@ def editor_bot(qtbot):
 
 @pytest.fixture
 def vim_bot(editor_bot):
+    """Create an spyder-vim plugin instance."""
     main, editor_stack, editor, qtbot = editor_bot
     vim = Vim(main)
     vim.register_plugin()
@@ -132,6 +134,7 @@ def test_three_chars_with_zero_repeat():
 
 
 def test_k_shortcut(vim_bot):
+    """Test k shortcut (Cursor moves up)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -142,6 +145,7 @@ def test_k_shortcut(vim_bot):
 
 
 def test_h_shortcut(vim_bot):
+    """Test h shortcut (Cursor moves to the left)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -152,6 +156,7 @@ def test_h_shortcut(vim_bot):
 
 
 def test_j_shortcut(vim_bot):
+    """Test j shortcut (Cursor moves down)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     editor.stdkey_up(True)
@@ -163,6 +168,7 @@ def test_j_shortcut(vim_bot):
 
 
 def test_l_shortchut(vim_bot):
+    """Test j shortcut (Cursor moves right)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     qtbot.keyPress(editor, Qt.Key_Left)

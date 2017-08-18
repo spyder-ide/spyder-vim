@@ -8,7 +8,7 @@ machine:
     # Environment variables used by astropy helpers
     TRAVIS_OS_NAME: "linux"
     CONDA_DEPENDENCIES_FLAGS: "--quiet"
-    CONDA_DEPENDENCIES: "pytest pytest-cov"
+    CONDA_DEPENDENCIES: "pytest pytest-cov mock"
     PIP_DEPENDENCIES: "coveralls coloredlogs pytest-qt pytest-xvfb flaky"
 
 dependencies:

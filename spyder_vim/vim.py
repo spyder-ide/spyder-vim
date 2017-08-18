@@ -52,4 +52,5 @@ class Vim(SpyderPluginWidget):  # pylint: disable=R0904
         return self.vim_cmd.commandline
 
     def get_plugin_actions(self):
+        """Return plugin actions."""
         return []
