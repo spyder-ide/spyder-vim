@@ -30,6 +30,7 @@ class EditorMock(QWidget):
     """Editor plugin mock."""
 
     def __init__(self, editor_stack):
+        """Editor Mock constructor."""
         QWidget.__init__(self, None)
         self.editor_stack = editor_stack
         self.editorsplitter = self.editor_stack
@@ -43,6 +44,7 @@ class EditorMock(QWidget):
         self.setLayout(layout)
 
     def get_current_editorstack(self):
+        """Return EditorStack instance."""
         return self.editor_stack
 
 
@@ -50,6 +52,7 @@ class MainMock(QWidget):
     """Spyder MainWindow mock."""
 
     def __init__(self, editor_stack):
+        """Main Window Mock constructor."""
         QWidget.__init__(self, None)
         self.plugin_focus_changed = Mock()
         self.editor = EditorMock(editor_stack)
@@ -60,7 +63,7 @@ class MainMock(QWidget):
 
 @pytest.fixture
 def editor_bot(qtbot):
-    """EditorStack pytest fixture."""
+    """Editorstack pytest fixture."""
     text = ('line 1\n'
             'line 2\n'
             'line 3\n'
