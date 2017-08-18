@@ -42,11 +42,11 @@ def get_description():
 REQUIREMENTS = ['spyder>=3.2.0']
 
 setup(
-    name='spyder_vim',
+    name='spyder-vim',
     version=get_version(),
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    keywords=['Spyder', 'Plugin'],
-    url='https://github.com/spyder-ide/spyder-terminal',
+    keywords=['Spyder', 'Plugin', 'Vim'],
+    url='https://github.com/spyder-ide/spyder-vim',
     license='MIT',
     author='Joseph Martinot-Lagarde',
     author_email='contrebasse@gmail.com',
