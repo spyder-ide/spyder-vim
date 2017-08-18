@@ -55,6 +55,7 @@ class VimKeys(object):
         self.visual_mode = False
 
     def __call__(self, key, repeat):
+        """Execute vim command."""
         leftover = ""
         if key.startswith("_"):
             return
@@ -204,8 +205,8 @@ class VimKeys(object):
             else:
                 self._move_selection(cur_block.next().position())
 
-    def l(self, repeat=1): # analysis:ignore
-        """Move cursor to the right"""
+    def l(self, repeat=1):  # analysis:ignore
+        """Move cursor to the right."""
         cursor = self._editor_cursor()
         if not cursor.atBlockEnd():
             if self.visual_mode == 'char':
@@ -336,7 +337,7 @@ class VimKeys(object):
         self._widget.editor().setFocus()
 
     def I(self, repeat):
-        """Insert text before the first non-blank in the line"""
+        """Insert text before the first non-blank in the line."""
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
 

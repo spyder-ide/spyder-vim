@@ -31,22 +31,19 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
 
     # %% SpyderPlugin API
     def get_plugin_title(self):
-        """Return widget title"""
+        """Return widget title."""
         return _("Vim")
 
     def get_plugin_icon(self):
-        """Return widget icon"""
+        """Return widget icon."""
         return  # self.get_icon('vim.png')
 
     def register_plugin(self):
-        """Register plugin in Spyder's main window"""
+        """Register plugin in Spyder's main window."""
         self.editor_widget.layout().addWidget(self)
         fixed_shortcut("Esc", self.editor_widget.editorsplitter,
                        self.commandline.setFocus)
 
     def get_focus_widget(self):
-        """
-        Return the widget to give focus to when
-        this plugin's dockwidget is raised on top-level
-        """
+        """Return vim command line and give it focus."""
         return self.commandline
