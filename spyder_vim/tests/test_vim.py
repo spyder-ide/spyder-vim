@@ -15,6 +15,7 @@ except ImportError:
 
 # Qt imports
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QWidget, QVBoxLayout
 
 # Spyder imports
@@ -64,7 +65,8 @@ class MainMock(QWidget):
 @pytest.fixture
 def editor_bot(qtbot):
     """Editorstack pytest fixture."""
-    text = ('line 1\n'
+    text = ('   123\n'
+            'line 1\n'
             'line 2\n'
             'line 3\n'
             'line 4')  # a newline is added at end
@@ -180,3 +182,159 @@ def test_l_shortchut(vim_bot):
     qtbot.keyClicks(cmd_line, 'l')
     _, new_col = editor.get_cursor_line_column()
     assert new_col == col + 1
+
+
+def test_w_shortchut(vim_bot):
+    """Test w shortcut (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.moveCursor(QTextCursor.PreviousWord, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Left)
+    cmd_line = vim.get_focus_widget()
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'w')
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col + 1
+
+
+def test_b_shortchut(vim_bot):
+    """Test b shortcut (Cursor moves to the previous word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    qtbot.keyPress(editor, Qt.Key_Left)
+    editor.moveCursor(QTextCursor.NextWord, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'b')
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col - 1
+
+
+def test_f_shortchut(vim_bot):
+    """f shortcut (Cursor moves to the next ocurrence of a character)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.go_to_line(2)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'fe')
+    qtbot.keyClicks(cmd_line, 'i')
+    new_line, new_col = editor.get_cursor_line_column()
+    print(line, col)
+    print(new_line, new_col)
+    assert new_col == col + len('lin')
+
+
+def test_uppercase_f_shortchut(vim_bot):
+    """f shortcut (Cursor moves to the previous ocurrence of a character)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.go_to_line(2)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'Fi')
+    qtbot.keyClicks(cmd_line, 'i')
+    new_line, new_col = editor.get_cursor_line_column()
+    print(line, col)
+    print(new_line, new_col)
+    assert new_col == col - 1
+
+
+def test_space_command(vim_bot):
+    """Cursor moves to the right."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, ' ')
+    new_line, new_col = editor.get_cursor_line_column()
+    print(line, col)
+    print(new_line, new_col)
+    assert new_col == col + 1
+
+
+def test_backspace_command(vim_bot):
+    """Cursor moves to the left."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, '\b')
+    new_line, new_col = editor.get_cursor_line_column()
+    print(line, col)
+    print(new_line, new_col)
+    assert new_col == col - 1
+
+
+def test_return_command(vim_bot):
+    """Move to the start of the next line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    new_line, _ = editor.get_cursor_line_column()
+    # print(line, col)
+    # print(new_line, new_col)
+    assert new_line == line + 1
+
+
+def test_dollar_command(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, '$')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col + len('line 2')
+
+
+def test_zero_command(vim_bot):
+    """Go to the start of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, '0')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col - len('line 3')
+
+
+def test_caret_command(vim_bot):
+    """Go to the first non-blank character of the line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, '^')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col - len('123')
