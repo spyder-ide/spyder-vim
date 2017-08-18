@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# Copyright (c) Spyder Project Contributors
+#
+# Licensed under the terms of the MIT License
+# (see LICENSE.txt for details)
+# -----------------------------------------------------------------------------
+"""Vim Widget."""
 
-from __future__ import (
-    print_function, unicode_literals, absolute_import, division)
 
 import re
 from time import time
@@ -19,8 +24,10 @@ RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
 VIM_VISUAL_OPS = "hjklGyw"
 VIM_VISUAL_PREFIX = "agi"
-RE_VIM_VISUAL_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=
-                                                           VIM_VISUAL_PREFIX))
+
+RE_VIM_VISUAL_PREFIX = re.compile(
+    RE_VIM_PREFIX_STR.format(prefixes=VIM_VISUAL_PREFIX))
+
 SYMBOLS_REPLACEMENT = {
     "!": "EXCLAMATION",
     "?": "QUESTION",
@@ -39,7 +46,10 @@ SYMBOLS_REPLACEMENT = {
 
 # %% Vim shortcuts
 class VimKeys(object):
+    """Wrap Vim command actions."""
+
     def __init__(self, widget):
+        """Main commands constructor."""
         self._widget = widget
         self._prev_cursor = None
         self.visual_mode = False
@@ -140,6 +150,7 @@ class VimKeys(object):
 
     # %% Movement
     def h(self, repeat=1):
+        """Move cursor to the left."""
         cursor = self._editor_cursor()
         if not cursor.atBlockStart():
             if self.visual_mode == 'char':
@@ -152,9 +163,10 @@ class VimKeys(object):
                     self._move_selection(start - 1, move_start=True)
             self._move_cursor(QTextCursor.Left)
             if repeat > 1:
-                self.h(repeat-1)
+                self.h(repeat - 1)
 
     def j(self, repeat=1):
+        """Move cursor down."""
         self._move_cursor(QTextCursor.Down, repeat)
         cursor = self._editor_cursor()
         if self.visual_mode == 'char':
@@ -173,6 +185,7 @@ class VimKeys(object):
                 self._move_selection(cur_block.position(), move_start=True)
 
     def k(self, repeat=1):
+        """Move the cursor up."""
         self._move_cursor(QTextCursor.Up, repeat)
         cursor = self._editor_cursor()
         if self.visual_mode == 'char':
@@ -191,7 +204,8 @@ class VimKeys(object):
             else:
                 self._move_selection(cur_block.next().position())
 
-    def l(self, repeat=1):
+    def l(self, repeat=1): # analysis:ignore
+        """Move cursor to the right"""
         cursor = self._editor_cursor()
         if not cursor.atBlockEnd():
             if self.visual_mode == 'char':
@@ -204,32 +218,36 @@ class VimKeys(object):
                     self._move_selection(start + 1, move_start=True)
             self._move_cursor(QTextCursor.Right)
             if repeat > 1:
-                self.l(repeat-1)
+                self.l(repeat - 1)
 
     def w(self, repeat=1):
+        """Move to the next word."""
         self._move_cursor(QTextCursor.NextWord, repeat)
         if self.visual_mode == 'char':
             cursor = self._editor_cursor()
             self._move_selection(cursor.position())
 
     def b(self, repeat=1):
+        """Move to the previous word."""
         self._move_cursor(QTextCursor.PreviousWord, repeat)
 
     def f(self, leftover, repeat=1):
+        """Go to the next ocurrence of a character."""
         cursor = self._editor_cursor()
         cur_pos_in_block = cursor.positionInBlock()
-        text = self._get_line(cursor)[cur_pos_in_block+1:]
+        text = self._get_line(cursor)[cur_pos_in_block + 1:]
         char_indices = []
         for i, char in enumerate(text):
             if char == leftover:
                 char_indices.append(cur_pos_in_block + i + 1)
         try:
-            index = char_indices[repeat-1]
-            self.l(repeat=index-cur_pos_in_block)
+            index = char_indices[repeat - 1]
+            self.l(repeat=index - cur_pos_in_block)
         except IndexError:
             pass
 
     def F(self, leftover, repeat=1):
+        """Go to the previous ocurrence of a character."""
         cursor = self._editor_cursor()
         cur_pos_in_block = cursor.positionInBlock()
         text = self._get_line(cursor)[:cur_pos_in_block]
@@ -239,17 +257,20 @@ class VimKeys(object):
                 char_indices.append(i)
         try:
             index = char_indices[-repeat]
-            self.h(repeat=cur_pos_in_block-index)
+            self.h(repeat=cur_pos_in_block - index)
         except IndexError:
             pass
 
     def SPACE(self, repeat=1):
+        """Move cursor to the right."""
         self._move_cursor(QTextCursor.Right, repeat)
 
     def BACKSPACE(self, repeat=1):
+        """Move cursor to the left."""
         self._move_cursor(QTextCursor.Left, repeat)
 
     def RETURN(self, repeat=1):
+        """Return character action."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.NextBlock, n=repeat)
@@ -262,12 +283,15 @@ class VimKeys(object):
         self._widget.update_vim_cursor()
 
     def DOLLAR(self, repeat=1):
+        """Go to the end of the current line."""
         self._move_cursor(QTextCursor.EndOfLine)
 
     def ZERO(self, repeat=1):
+        """Go to the start of the current line."""
         self._move_cursor(QTextCursor.StartOfLine)
 
     def CARET(self, repeat=1):
+        """Go to the first non-blank character of the line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         text = self._get_line(cursor)
@@ -278,6 +302,7 @@ class VimKeys(object):
             self._widget.update_vim_cursor()
 
     def G(self, repeat=-1):
+        """Go to the first non-blank character of the last line."""
         if repeat == -1:
             self._move_cursor(QTextCursor.End)
             if self.visual_mode:
@@ -286,6 +311,7 @@ class VimKeys(object):
             self.gg(repeat)
 
     def gg(self, repeat=1):
+        """Go to the first non-blank character of the first line."""
         editor = self._widget.editor()
         editor.go_to_line(repeat)
         self._widget.update_vim_cursor()
@@ -306,21 +332,26 @@ class VimKeys(object):
 
     # %% Insertion
     def i(self, repeat):
+        """Insert text before the cursor."""
         self._widget.editor().setFocus()
 
     def I(self, repeat):
+        """Insert text before the first non-blank in the line"""
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
 
     def a(self, repeat):
+        """Append text after the cursor."""
         self.l()
         self._widget.editor().setFocus()
 
     def A(self, repeat):
+        """Append text at the end of the line."""
         self._move_cursor(QTextCursor.EndOfLine)
         self._widget.editor().setFocus()
 
     def o(self, repeat):
+        """Begin a new line below the cursor and insert text."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
@@ -329,6 +360,7 @@ class VimKeys(object):
         editor.setFocus()
 
     def O(self, repeat):
+        """Begin a new line above the cursor and insert text."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
@@ -339,6 +371,7 @@ class VimKeys(object):
 
     # %% Editing and cases(visual)
     def u(self, repeat):
+        """Undo changes."""
         if not self.visual_mode:
             for count in range(repeat):
                 self._widget.editor().undo()
@@ -348,12 +381,14 @@ class VimKeys(object):
             pass
 
     def U(self, repeat):
+        """Undo all latest changes on one line."""
         if self.visual_mode:
             # TODO: make selection uppercase
             pass
 
     # %% Deletions
     def dd(self, repeat):
+        """Delete line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
@@ -370,6 +405,7 @@ class VimKeys(object):
         self._widget.update_vim_cursor()
 
     def D(self, repeat):
+        """Delete the characters under the cursor until the end of the line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
@@ -380,6 +416,7 @@ class VimKeys(object):
         self._widget.update_vim_cursor()
 
     def dw(self, repeat):
+        """Cut words."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor,
@@ -389,11 +426,13 @@ class VimKeys(object):
         self._widget.update_vim_cursor()
 
     def cw(self, repeat):
+        """Cut words and edit."""
         self.dw(repeat)
         self.i(repeat)
 
     # %% Copy
     def y(self, repeat):
+        """Select line."""
         editor = self._widget.editor()
         selection = editor.get_extra_selections('vim_visual')[0]
         cursor = selection.cursor
@@ -410,12 +449,14 @@ class VimKeys(object):
         self.exit_visual_mode()
 
     def yy(self, repeat):
+        """Copy line."""
         cursor = self._editor_cursor()
         text = self._get_line(cursor, lines=repeat)
         QApplication.clipboard().setText(text)
         self._update_selection_type("line")
 
     def yw(self, repeat):
+        """Copy word."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.NextWord, QTextCursor.KeepAnchor,
@@ -425,6 +466,7 @@ class VimKeys(object):
         QApplication.clipboard().setText(text)
 
     def yDOLLAR(self, repeat):
+        """Copy until end of line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
@@ -433,6 +475,7 @@ class VimKeys(object):
         QApplication.clipboard().setText(text)
 
     def p(self, repeat):
+        """Paste line below current line, paste characters after cursor."""
         if self._widget.selection_type[1] == 'line':
             self.j()
             self.P(repeat)
@@ -444,6 +487,7 @@ class VimKeys(object):
             self.P()
 
     def P(self, repeat):
+        """Paste line above current line, paste characters before cursor."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         text = QApplication.clipboard().text()
@@ -471,12 +515,14 @@ class VimKeys(object):
 
     # %% Files
     def ZZ(self, repeat):
+        """Save and close current file."""
         self._widget.main.editor.save_action.trigger()
         self._widget.main.editor.close_action.trigger()
         self._widget.commandline.setFocus()
 
     # %% Visual mode
     def v(self, repeat):
+        """Start Visual mode per character."""
         self.visual_mode = 'char'
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -491,6 +537,7 @@ class VimKeys(object):
         editor.update_extra_selections()
 
     def V(self, repeat):
+        """Start Visual mode per line."""
         self.visual_mode = 'line'
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -512,10 +559,14 @@ class VimKeys(object):
 
 # %% Vim commands
 class VimCommands(object):
+    """Colon prefix commands."""
+
     def __init__(self, widget):
+        """Main constructor."""
         self._widget = widget
 
     def __call__(self, cmd):
+        """Execute colon prefix command."""
         if not cmd or cmd.startswith("_"):
             return
         cmd = cmd.split(None, 1)
@@ -534,22 +585,27 @@ class VimCommands(object):
 
     # %% Files
     def w(self, args=""):
+        """Save current file."""
         self._widget.main.editor.save_action.trigger()
         self._widget.commandline.setFocus()
 
     def q(self, args=""):
+        """Close current file."""
         self._widget.main.editor.close_action.trigger()
         self._widget.commandline.setFocus()
 
     def wq(self, args=""):
+        """Save and close current file."""
         self.w(args)
         self.q()
 
     def n(self, args=""):
+        """Create new file."""
         self._widget.main.editor.new_action.trigger()
         self._widget.commandline.setFocus()
 
     def e(self, args=""):
+        """Reload current file."""
         if not args:  # Revert without asking
             editor = self._widget.main.editor
             editorstack = editor.get_current_editorstack()
@@ -562,6 +618,7 @@ class VimCommands(object):
         self._widget.commandline.setFocus()
 
     def NUMBER(self, args=""):
+        """Go to line."""
         editor = self._widget.editor()
         editor.go_to_line(int(args))
         self._widget.update_vim_cursor()
@@ -569,7 +626,10 @@ class VimCommands(object):
 
 # %%
 class VimLineEdit(QLineEdit):
+    """Vim Command input."""
+
     def keyPressEvent(self, event):
+        """Capture Backspace and ESC Keypresses."""
         if event.key() == Qt.Key_Escape:
             if self.parent().vim_keys.visual_mode:
                 self.parent().vim_keys.exit_visual_mode()
@@ -583,11 +643,13 @@ class VimLineEdit(QLineEdit):
             QLineEdit.keyPressEvent(self, event)
 
     def focusInEvent(self, event):
+        """Enter command mode."""
         QLineEdit.focusInEvent(self, event)
         self.parent().vim_keys.h()
         self.clear()
 
     def focusOutEvent(self, event):
+        """Enter editor mode."""
         QLineEdit.focusOutEvent(self, event)
         self.parent().editor().clear_extra_selections('vim_cursor')
         if self.parent().vim_keys.visual_mode:
@@ -595,10 +657,10 @@ class VimLineEdit(QLineEdit):
 
 
 class VimWidget(QWidget):
-    """
-    Vim widget
-    """
+    """Vim widget."""
+
     def __init__(self, editor_widget):
+        """Main widget constructor."""
         self.editor_widget = editor_widget
         QLineEdit.__init__(self, editor_widget)
 
@@ -621,6 +683,7 @@ class VimWidget(QWidget):
         self.vim_commands = VimCommands(self)
 
     def on_text_changed(self, text):
+        """Parse input command."""
         if not text or text[0] in VIM_COMMAND_PREFIX:
             return
         print(text)
@@ -647,6 +710,7 @@ class VimWidget(QWidget):
         self.commandline.setText(leftover)
 
     def on_return(self):
+        """Execute command."""
         text = self.commandline.text()
         if not text:
             return
@@ -663,18 +727,20 @@ class VimWidget(QWidget):
         self.commandline.clear()
 
     def on_copy(self):
+        """Capture text copy action."""
         cur_time = int(time())
         if cur_time != self.selection_type[0]:
             self.selection_type = (cur_time, "char")
 
     def editor(self):
-        # Retrieve text of current opened file
+        """Retrieve text of current opened file."""
         editorstack = self.editor_widget.get_current_editorstack()
         index = editorstack.get_stack_index()
         finfo = editorstack.data[index]
         return finfo.editor
 
     def update_vim_cursor(self):
+        """Update Vim cursor position."""
         selection = QTextEdit.ExtraSelection()
         back = Qt.white  # selection.format.background().color()
         fore = Qt.black  # selection.format.foreground().color()

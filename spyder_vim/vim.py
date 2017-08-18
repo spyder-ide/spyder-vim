@@ -1,35 +1,30 @@
 # -*- coding: utf-8 -*-
-u"""
-:author: Joseph Martinot-Lagarde
+# -----------------------------------------------------------------------------
+# Copyright (c) Spyder Project Contributors
+#
+# Licensed under the terms of the MIT License
+# (see LICENSE.txt for details)
+# -----------------------------------------------------------------------------
+"""Vim Plugin."""
 
-Created on Sat Jan 19 14:57:57 2013
-"""
-from __future__ import (
-    print_function, unicode_literals, absolute_import, division)
 
-from .vim_widget import VimWidget
+from spyder_vim.vim_widget import VimWidget
 
 # Local imports
-# TODO: activate translation
-#from spyder.baseconfig import get_translation
-#_ = get_translation("p_autopep8", dirname="spyderplugins.autopep8")
-_ = lambda txt: txt
+from spyder.config.base import _
 from spyder.config.gui import fixed_shortcut
-
 from spyder.plugins import SpyderPluginMixin
 
 
 # %%
 class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
+    """Implements a Vim-like command mode."""
 
-    """Python source code automatic formatting based on autopep8.
-
-    QObject is needed to register the action.
-    """
     CONF_SECTION = "Vim"
     CONFIGWIDGET_CLASS = None
 
     def __init__(self, parent):
+        """Main plugin constructor."""
         VimWidget.__init__(self, editor_widget=parent.editor)
         SpyderPluginMixin.__init__(self, parent)
         self.initialize_plugin()
@@ -49,24 +44,9 @@ class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
         fixed_shortcut("Esc", self.editor_widget.editorsplitter,
                        self.commandline.setFocus)
 
-    def apply_plugin_settings(self, options):
-        """Needs to be redefined."""
-        pass
-
-    def get_plugin_actions(self):
-        return []
-
     def get_focus_widget(self):
         """
         Return the widget to give focus to when
         this plugin's dockwidget is raised on top-level
         """
         return self.commandline
-
-    def refresh_plugin(self):
-        """Refresh widget"""
-        pass
-
-    def closing_plugin(self, cancelable=False):
-        """Perform actions before parent main window is closed"""
-        return True
