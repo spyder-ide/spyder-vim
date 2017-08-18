@@ -312,7 +312,7 @@ class VimKeys(object):
             self.gg(repeat)
 
     def gg(self, repeat=1):
-        """Go to the first non-blank character of the first line."""
+        """Go to the first position of the first line."""
         editor = self._widget.editor()
         editor.go_to_line(repeat)
         self._widget.update_vim_cursor()
@@ -433,7 +433,7 @@ class VimKeys(object):
 
     # %% Copy
     def y(self, repeat):
-        """Select line."""
+        """Copy selected line."""
         editor = self._widget.editor()
         selection = editor.get_extra_selections('vim_visual')[0]
         cursor = selection.cursor

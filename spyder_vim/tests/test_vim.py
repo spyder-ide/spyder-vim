@@ -16,7 +16,7 @@ except ImportError:
 # Qt imports
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QTextCursor
-from qtpy.QtWidgets import QWidget, QVBoxLayout
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 # Spyder imports
 # from spyder.utils.fixtures import setup_editor
@@ -76,7 +76,7 @@ def editor_bot(qtbot):
     editor_stack.set_io_actions(Mock(), Mock(), Mock(), Mock())
     finfo = editor_stack.new('foo.py', 'utf-8', text)
     main = MainMock(editor_stack)
-    main.show()
+    # main.show()
     qtbot.addWidget(main)
     return main, editor_stack, finfo.editor, qtbot
 
@@ -138,8 +138,8 @@ def test_three_chars_with_zero_repeat():
     assert groups == ("20", "D", "")
 
 
-def test_k_shortcut(vim_bot):
-    """Test k shortcut (Cursor moves up)."""
+def test_k_command(vim_bot):
+    """Test k command (Cursor moves up)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -149,8 +149,8 @@ def test_k_shortcut(vim_bot):
     assert new_line == line - 1
 
 
-def test_h_shortcut(vim_bot):
-    """Test h shortcut (Cursor moves to the left)."""
+def test_h_command(vim_bot):
+    """Test h command (Cursor moves to the left)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -160,8 +160,8 @@ def test_h_shortcut(vim_bot):
     assert new_col == col - 1
 
 
-def test_j_shortcut(vim_bot):
-    """Test j shortcut (Cursor moves down)."""
+def test_j_command(vim_bot):
+    """Test j command (Cursor moves down)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     editor.stdkey_up(True)
@@ -173,7 +173,7 @@ def test_j_shortcut(vim_bot):
 
 
 def test_l_shortchut(vim_bot):
-    """Test j shortcut (Cursor moves right)."""
+    """Test j command (Cursor moves right)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     qtbot.keyPress(editor, Qt.Key_Left)
@@ -185,7 +185,7 @@ def test_l_shortchut(vim_bot):
 
 
 def test_w_shortchut(vim_bot):
-    """Test w shortcut (Cursor moves to the next word)."""
+    """Test w command (Cursor moves to the next word)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     editor.moveCursor(QTextCursor.PreviousWord, QTextCursor.KeepAnchor)
@@ -198,7 +198,7 @@ def test_w_shortchut(vim_bot):
 
 
 def test_b_shortchut(vim_bot):
-    """Test b shortcut (Cursor moves to the previous word)."""
+    """Test b command (Cursor moves to the previous word)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     qtbot.keyPress(editor, Qt.Key_Left)
@@ -211,7 +211,7 @@ def test_b_shortchut(vim_bot):
 
 
 def test_f_shortchut(vim_bot):
-    """f shortcut (Cursor moves to the next ocurrence of a character)."""
+    """Cursor moves to the next ocurrence of a character."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.go_to_line(2)
     # editor.stdkey_up(True)
@@ -227,7 +227,7 @@ def test_f_shortchut(vim_bot):
 
 
 def test_uppercase_f_shortchut(vim_bot):
-    """f shortcut (Cursor moves to the previous ocurrence of a character)."""
+    """Cursor moves to the previous ocurrence of a character."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.go_to_line(2)
     # editor.stdkey_up(True)
@@ -338,3 +338,270 @@ def test_caret_command(vim_bot):
     qtbot.keyClicks(cmd_line, '^')
     new_line, new_col = editor.get_cursor_line_column()
     assert new_col == col - len('123')
+
+
+def test_uppercase_g_command(vim_bot):
+    """Go to the first non-blank character of the last line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'G')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col and new_line == line + 4
+
+
+def test_gg_command(vim_bot):
+    """Go to the first position of the first line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'gg')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == 0 and new_line == 0
+
+
+def test_uppercase_i_command(vim_bot):
+    """Insert text before the first non-blank in the line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'I')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == 0
+
+
+def test_a_command(vim_bot):
+    """Append text after the cursor."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'a')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col + 1
+
+
+def test_uppercase_a_command(vim_bot):
+    """Append text at the end of the line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'A')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col + len('line 2')
+
+
+def test_o_command(vim_bot):
+    """Begin a new line below the cursor and insert text."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'o')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_line == line + 1 and new_col == 0
+
+
+def test_uppercase_O_command(vim_bot):
+    """Begin a new line above the cursor and insert text."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'O')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_line == line and new_col == 0
+
+
+def test_u_command(vim_bot):
+    """Undo changes."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyClicks(editor, 'spam')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'u')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col - len('spam')
+
+
+def test_dd_command(vim_bot):
+    """Delete line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    num_lines = editor.get_line_count()
+    qtbot.keyClicks(cmd_line, 'dd')
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_num_lines = editor.get_line_count()
+    assert new_num_lines == num_lines - 1
+
+
+def test_uppercase_d_command(vim_bot):
+    """Delete line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    line, col = editor.get_cursor_line_column()
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'D')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col - len('ne 2')
+
+
+def test_dw_command(vim_bot):
+    """Cut words."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    line, col = editor.get_cursor_line_column()
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'dw')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == 2
+
+
+def test_cw_command(vim_bot):
+    """Cut words and edit."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    line, col = editor.get_cursor_line_column()
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'cw')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == 2
+
+
+def test_y_command(vim_bot):
+    """Copy selected text on visual mode."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '3l')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == 'lin'
+
+
+def test_yy_command(vim_bot):
+    """Copy current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, 'yy')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard[:-1] == 'line 2'
+
+
+def test_yy_no_visual_command(vim_bot):
+    """Copy current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    # qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, 'yy')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard[:-1] == 'line 2'
+
+
+def test_yw_command(vim_bot):
+    """Copy word."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    # qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, 'yw')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == 'line'
+
+
+def test_ydollar_command(vim_bot):
+    """Copy until end of line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    # qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, 'y$')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == 'ne 2'
+
