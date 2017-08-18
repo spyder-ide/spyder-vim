@@ -5,8 +5,6 @@ machine:
     # Python versions to tests (Maximum of 4 different versions)
     # The last container is used to test with pyqt5 wheels
     PY_VERSIONS: "2.7 3.6 3.5"
-    # For Coveralls
-    COVERALLS_REPO_TOKEN: sTGxv5iQxuiBQCoxLB53t6m2xSe58rAIq
     # Environment variables used by astropy helpers
     TRAVIS_OS_NAME: "linux"
     CONDA_DEPENDENCIES_FLAGS: "--quiet"
