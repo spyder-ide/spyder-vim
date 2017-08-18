@@ -271,7 +271,7 @@ class VimKeys(object):
         self._move_cursor(QTextCursor.Left, repeat)
 
     def RETURN(self, repeat=1):
-        """Return character action."""
+        """Move to the start of the next line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.NextBlock, n=repeat)
@@ -660,9 +660,10 @@ class VimLineEdit(QLineEdit):
 class VimWidget(QWidget):
     """Vim widget."""
 
-    def __init__(self, editor_widget):
+    def __init__(self, editor_widget, main):
         """Main widget constructor."""
         self.editor_widget = editor_widget
+        self.main = main
         QLineEdit.__init__(self, editor_widget)
 
         # Build widget
@@ -674,7 +675,7 @@ class VimWidget(QWidget):
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("Vim:"))
         hlayout.addWidget(self.commandline)
-        hlayout.setContentsMargins(1, 1, 1, 1)
+        hlayout.setContentsMargins(5, 0, 0, 5)
         self.setLayout(hlayout)
         self.selection_type = (int(time()), "char")
         QApplication.clipboard().dataChanged.connect(self.on_copy)
