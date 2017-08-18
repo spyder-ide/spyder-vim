@@ -40,7 +40,7 @@ dependencies:
 test:
   override:
     # Style checks
-    - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && ciocheck spyder_terminal: # note the colon
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && ciocheck spyder_vim: # note the colon
         parallel: true
     # Tests
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && python runtests.py: # note the colon
