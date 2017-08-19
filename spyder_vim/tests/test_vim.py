@@ -745,3 +745,112 @@ def test_colon_number_command(vim_bot):
     qtbot.keyPress(cmd_line, Qt.Key_Return)
     line, _ = editor.get_cursor_line_column()
     assert line == 0
+
+
+def test_h_command_char_mode(vim_bot):
+    """Select character to the left."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '2h')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == 'li'
+
+
+def test_j_command_char_mode(vim_bot):
+    """Select character down."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '2j')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    # print(list('ne 2 line 3 li'))
+    assert clipboard == u'ne 2\u2029line 3\u2029li'
+
+
+def test_j_command_line_mode(vim_bot):
+    """Select line down."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, '2j')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == u'   123\u2029line 1\u2029'
+
+
+def test_k_command_line_mode(vim_bot):
+    """Select line up."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, '2k')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == u'   123\u2029line 1\u2029line 2\u2029'
+
+
+def test_gg_command_line_mode(vim_bot):
+    """Select from first line character."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, 'gg')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == u'   123\u2029line 1\u2029line 2\u2029'
+
+
+def test_gg_command_char_mode(vim_bot):
+    """Select from first line character."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, 'gg')
+    qtbot.keyClicks(cmd_line, 'y')
+    clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert clipboard == u'   123\u2029line 1\u2029li'
