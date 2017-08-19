@@ -1,4 +1,4 @@
-# spyder-terminal
+# spyder-vim
 Spyder Plugin for executing Vim commands inside the code editor. We currently support the following keybindings and commands: https://github.com/spyder-ide/spyder-vim/issues/1
 
 ## Project Info
