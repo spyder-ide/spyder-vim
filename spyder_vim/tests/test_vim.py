@@ -82,7 +82,7 @@ def editor_bot(qtbot):
     editor_stack.set_introspector(Mock())
     editor_stack.set_find_widget(Mock())
     editor_stack.set_io_actions(Mock(), Mock(), Mock(), Mock())
-    finfo = editor_stack.new(osp.join(LOCATION, 'foo.py'), 'utf-8', text)
+    finfo = editor_stack.new(osp.join(LOCATION, 'foo.txt'), 'utf-8', text)
     main = MainMock(editor_stack)
     # main.show()
     qtbot.addWidget(main)
