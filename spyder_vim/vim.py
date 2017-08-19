@@ -1,72 +1,56 @@
 # -*- coding: utf-8 -*-
-u"""
-:author: Joseph Martinot-Lagarde
+# -----------------------------------------------------------------------------
+# Copyright (c) Spyder Project Contributors
+#
+# Licensed under the terms of the MIT License
+# (see LICENSE.txt for details)
+# -----------------------------------------------------------------------------
+"""Vim Plugin."""
 
-Created on Sat Jan 19 14:57:57 2013
-"""
-from __future__ import (
-    print_function, unicode_literals, absolute_import, division)
-
-from .vim_widget import VimWidget
+from spyder_vim.vim_widget import VimWidget
+from qtpy.QtCore import Signal
 
 # Local imports
-# TODO: activate translation
-#from spyder.baseconfig import get_translation
-#_ = get_translation("p_autopep8", dirname="spyderplugins.autopep8")
-_ = lambda txt: txt
+from spyder.config.base import _
 from spyder.config.gui import fixed_shortcut
-
-from spyder.plugins import SpyderPluginMixin
+from spyder.plugins import SpyderPluginWidget
 
 
 # %%
-class Vim(VimWidget, SpyderPluginMixin):  # pylint: disable=R0904
+class Vim(SpyderPluginWidget):  # pylint: disable=R0904
+    """Implements a Vim-like command mode."""
 
-    """Python source code automatic formatting based on autopep8.
-
-    QObject is needed to register the action.
-    """
+    focus_changed = Signal()
     CONF_SECTION = "Vim"
     CONFIGWIDGET_CLASS = None
 
     def __init__(self, parent):
-        VimWidget.__init__(self, editor_widget=parent.editor)
-        SpyderPluginMixin.__init__(self, parent)
+        """Main plugin constructor."""
+        SpyderPluginWidget.__init__(self, parent)
+        self.main = parent
         self.initialize_plugin()
+        self.vim_cmd = VimWidget(self.main.editor, self.main)
 
     # %% SpyderPlugin API
     def get_plugin_title(self):
-        """Return widget title"""
+        """Return widget title."""
         return _("Vim")
 
     def get_plugin_icon(self):
-        """Return widget icon"""
+        """Return widget icon."""
         return  # self.get_icon('vim.png')
 
     def register_plugin(self):
-        """Register plugin in Spyder's main window"""
-        self.editor_widget.layout().addWidget(self)
-        fixed_shortcut("Esc", self.editor_widget.editorsplitter,
-                       self.commandline.setFocus)
-
-    def apply_plugin_settings(self, options):
-        """Needs to be redefined."""
-        pass
-
-    def get_plugin_actions(self):
-        return []
+        """Register plugin in Spyder's main window."""
+        self.focus_changed.connect(self.main.plugin_focus_changed)
+        self.vim_cmd.editor_widget.layout().addWidget(self.vim_cmd)
+        fixed_shortcut("Esc", self.vim_cmd.editor_widget.editorsplitter,
+                       self.vim_cmd.commandline.setFocus)
 
     def get_focus_widget(self):
-        """
-        Return the widget to give focus to when
-        this plugin's dockwidget is raised on top-level
-        """
-        return self.commandline
+        """Return vim command line and give it focus."""
+        return self.vim_cmd.commandline
 
-    def refresh_plugin(self):
-        """Refresh widget"""
-        pass
-
-    def closing_plugin(self, cancelable=False):
-        """Perform actions before parent main window is closed"""
-        return True
+    def get_plugin_actions(self):
+        """Return plugin actions."""
+        return []
