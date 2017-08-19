@@ -607,6 +607,7 @@ class VimCommands(object):
 
     def e(self, args=""):
         """Reload current file."""
+        args = args.strip()
         if not args:  # Revert without asking
             editor = self._widget.main.editor
             editorstack = editor.get_current_editorstack()

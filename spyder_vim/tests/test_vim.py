@@ -6,6 +6,10 @@
 
 """Tests for the plugin."""
 
+# Standard library imports
+import os
+import os.path as osp
+
 # Test library imports
 import pytest
 try:
@@ -25,6 +29,10 @@ from spyder.widgets.editor import EditorStack
 # Local imports
 from spyder_vim.vim import Vim
 from spyder_vim.vim_widget import RE_VIM_PREFIX
+
+
+LOCATION = osp.realpath(osp.join(
+    os.getcwd(), osp.dirname(__file__)))
 
 
 class EditorMock(QWidget):
@@ -74,7 +82,7 @@ def editor_bot(qtbot):
     editor_stack.set_introspector(Mock())
     editor_stack.set_find_widget(Mock())
     editor_stack.set_io_actions(Mock(), Mock(), Mock(), Mock())
-    finfo = editor_stack.new('foo.py', 'utf-8', text)
+    finfo = editor_stack.new(osp.join(LOCATION, 'foo.py'), 'utf-8', text)
     main = MainMock(editor_stack)
     # main.show()
     qtbot.addWidget(main)
@@ -605,3 +613,135 @@ def test_ydollar_command(vim_bot):
     # new_line, new_col = editor.get_cursor_line_column()
     assert clipboard == 'ne 2'
 
+
+def test_p_command_char_mode(vim_bot):
+    """Paste characters after cursor."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '2k')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'l 123\n'
+                     'liine 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 4')
+    # clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert text == expected_text
+
+
+def test_p_command_line_mode(vim_bot):
+    """Paste line below current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V')
+    qtbot.keyClicks(cmd_line, '2h')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 4')
+    # clipboard = QApplication.clipboard().text()
+    # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    # new_line, new_col = editor.get_cursor_line_column()
+    assert text == expected_text
+
+
+def test_zz_command(vim_bot):
+    """Save and close file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'ZZ')
+    main.editor.close_action.trigger.assert_called()
+    main.editor.save_action.trigger.assert_called()
+
+
+def test_w_command(vim_bot):
+    """Save file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':w')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    main.editor.save_action.trigger.assert_called()
+
+
+def test_q_command(vim_bot):
+    """Close file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':q')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    main.editor.close_action.trigger.assert_called()
+
+
+def test_wq_command(vim_bot):
+    """Save and Close file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':wq')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    main.editor.close_action.trigger.assert_called()
+    main.editor.save_action.trigger.assert_called()
+
+
+def test_e_command_no_args(vim_bot):
+    """Reload file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    original_state = editor.toPlainText()
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':e')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    state = editor.toPlainText()
+    assert original_state == state
+
+
+def test_e_command_args(vim_bot):
+    """Reload and open file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':e .')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    main.editor.open_action.trigger.assert_called()
+
+
+def test_colon_number_command(vim_bot):
+    """Go to line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, ':1')
+    qtbot.keyPress(cmd_line, Qt.Key_Return)
+    line, _ = editor.get_cursor_line_column()
+    assert line == 0
