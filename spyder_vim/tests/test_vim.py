@@ -673,8 +673,8 @@ def test_zz_command(vim_bot):
     editor.go_to_line(3)
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, 'ZZ')
-    main.editor.close_action.trigger.assert_called_once()
-    main.editor.save_action.trigger.assert_called_once()
+    main.editor.close_action.trigger.assert_called_once_with()
+    main.editor.save_action.trigger.assert_called_once_with()
 
 
 def test_w_command(vim_bot):
@@ -685,7 +685,7 @@ def test_w_command(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, ':w')
     qtbot.keyPress(cmd_line, Qt.Key_Return)
-    main.editor.save_action.trigger.assert_called_once()
+    main.editor.save_action.trigger.assert_called_once_with()
 
 
 def test_q_command(vim_bot):
@@ -696,7 +696,7 @@ def test_q_command(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, ':q')
     qtbot.keyPress(cmd_line, Qt.Key_Return)
-    main.editor.close_action.trigger.assert_called_once()
+    main.editor.close_action.trigger.assert_called_once_with()
 
 
 def test_wq_command(vim_bot):
@@ -707,8 +707,8 @@ def test_wq_command(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, ':wq')
     qtbot.keyPress(cmd_line, Qt.Key_Return)
-    main.editor.close_action.trigger.assert_called_once()
-    main.editor.save_action.trigger.assert_called_once()
+    main.editor.close_action.trigger.assert_called_once_with()
+    main.editor.save_action.trigger.assert_called_once_with()
 
 
 def test_e_command_no_args(vim_bot):
@@ -732,7 +732,7 @@ def test_e_command_args(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, ':e .')
     qtbot.keyPress(cmd_line, Qt.Key_Return)
-    main.editor.open_action.trigger.assert_called_once()
+    main.editor.open_action.trigger.assert_called_once_with()
 
 
 def test_colon_number_command(vim_bot):
