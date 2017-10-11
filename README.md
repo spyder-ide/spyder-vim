@@ -19,11 +19,6 @@ cd spyder-vim
 python setup.py install .
 ```
 
-Using pip:
-```
-pip install spyder-vim
-```
-
 Using conda:
 ```
 conda install spyder-vim -c spyder-ide
