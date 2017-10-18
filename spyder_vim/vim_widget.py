@@ -306,7 +306,7 @@ class VimKeys(object):
 
     def e(self, repeat=1):
         """Go to end of current word.
-        
+
         Or go to end of next word if cursor is currently on whitespace.
         """
         cursor = self._editor_cursor()
