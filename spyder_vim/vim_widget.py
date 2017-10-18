@@ -304,6 +304,16 @@ class VimKeys(object):
         """Move to the previous word."""
         self._move_cursor(QTextCursor.PreviousWord, repeat)
 
+    def e(self, repeat=1):
+        """Go to end of current word.
+        Or go to end of next word if cursor is currently on whitespace."""
+        cursor = self._editor_cursor()
+        cur_pos_in_block = cursor.positionInBlock()
+        char = self._get_line(cursor)[cur_pos_in_block:cur_pos_in_block + 1]
+        if not char.isalnum():
+            self.w(repeat)
+        self._move_cursor(QTextCursor.EndOfWord, repeat)
+
     def f(self, leftover, repeat=1):
         """Go to the next ocurrence of a character."""
         cursor = self._editor_cursor()
