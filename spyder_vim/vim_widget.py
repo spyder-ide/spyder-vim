@@ -431,6 +431,16 @@ class VimKeys(object):
         self.dw(repeat)
         self.i(repeat)
 
+    def x(self, repeat=1):
+        """Delete the character under the cursor."""
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor,
+                            repeat)
+        editor.setTextCursor(cursor)
+        editor.cut()
+        self._widget.update_vim_cursor()
+
     # %% Copy
     def y(self, repeat):
         """Copy selected line."""
