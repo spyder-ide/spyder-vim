@@ -431,6 +431,29 @@ class VimKeys(object):
         self.dw(repeat)
         self.i(repeat)
 
+    def x(self, repeat=1):
+        """Delete the character under cursor with delete from EndOfLine."""
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        cur_pos = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor,
+                            repeat)
+        line_start_pos = cursor.position()
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
+                            repeat)
+        line_end_pos = cursor.position()
+        """Don't delete blank lines (effectively ignoring \n)"""
+        if line_start_pos == line_end_pos:
+            return
+        cursor.setPosition(cur_pos, QTextCursor.KeepAnchor)
+        """At EndOfLine? If so move cursor for delete from EndOfLine"""
+        if cur_pos >= line_end_pos:
+            cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor,
+                                repeat)
+        cursor.deleteChar()
+        editor.setTextCursor(cursor)
+        self._widget.update_vim_cursor()
+
     # %% Copy
     def y(self, repeat):
         """Copy selected line."""

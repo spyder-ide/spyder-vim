@@ -536,6 +536,22 @@ def test_cw_command(vim_bot):
     assert new_col == 2
 
 
+def test_x_command(vim_bot):
+    """Delete the character under the cursor wth delete from EndOfLine."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    line, col = editor.get_cursor_line_column()
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'x')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == 5
+
+
 def test_y_command(vim_bot):
     """Copy selected text on visual mode."""
     main, editor_stack, editor, vim, qtbot = vim_bot
