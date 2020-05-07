@@ -675,6 +675,14 @@ class VimLineEdit(QLineEdit):
         elif event.key() == Qt.Key_Return:
             self.setText(self.text() + "\r")
             self.parent().on_return()
+        elif event.key() == Qt.Key_Left and not self.text():
+            self.setText("h")
+        elif event.key() == Qt.Key_Right and not self.text():
+            self.setText("l")
+        elif event.key() == Qt.Key_Up and not self.text():
+            self.setText("k")
+        elif event.key() == Qt.Key_Down and not self.text():
+            self.setText("j")
         else:
             QLineEdit.keyPressEvent(self, event)
 

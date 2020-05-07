@@ -157,6 +157,17 @@ def test_k_command(vim_bot):
     assert new_line == line - 1
 
 
+def test_arrowup_command(vim_bot):
+    """Test k command (Cursor moves up)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyPress(editor, Qt.Key_Up)
+    new_line, _ = editor.get_cursor_line_column()
+    assert new_line == line - 1
+
+
 def test_h_command(vim_bot):
     """Test h command (Cursor moves to the left)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -180,6 +191,18 @@ def test_j_command(vim_bot):
     assert new_line == line + 1
 
 
+def test_arrowdown_command(vim_bot):
+    """Test k command (Cursor moves up)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.stdkey_up(True)
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyPress(editor, Qt.Key_Down)
+    new_line, _ = editor.get_cursor_line_column()
+    assert new_line == line + 1
+
+
 def test_l_shortchut(vim_bot):
     """Test j command (Cursor moves right)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -190,6 +213,30 @@ def test_l_shortchut(vim_bot):
     qtbot.keyClicks(cmd_line, 'l')
     _, new_col = editor.get_cursor_line_column()
     assert new_col == col + 1
+
+
+def test_arrowright_shortchut(vim_bot):
+    """Test j command (Cursor moves right)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    qtbot.keyPress(editor, Qt.Key_Left)
+    cmd_line = vim.get_focus_widget()
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyPress(editor, Qt.Key_Right)
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col + 1
+
+
+def test_arrowleft_shortchut(vim_bot):
+    """Test j command (Cursor moves right)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyPress(editor, Qt.Key_Left)
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col - 1
 
 
 def test_w_shortchut(vim_bot):
