@@ -401,7 +401,10 @@ class VimKeys(object):
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
-        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
+        if not cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat):
+            cursor.movePosition(QTextCursor.Up)
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.movePosition(QTextCursor.End, QTextCursor.KeepAnchor, repeat)
         editor.setTextCursor(cursor)
         editor.cut()
         self._update_selection_type("line")
