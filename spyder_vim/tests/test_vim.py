@@ -469,6 +469,25 @@ def test_u_command(vim_bot):
     assert new_col == col - len('spam')
 
 
+def test_d_command(vim_bot):
+    """Delete selection."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    # editor.stdkey_up(True)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    lines, cols = editor.get_cursor_line_column()
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyPress(cmd_line, 'v')
+    qtbot.keyPress(cmd_line, 'l')
+    qtbot.keyPress(cmd_line, 'l')
+    qtbot.keyClicks(cmd_line, 'd')
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    new_lines, new_cols = editor.get_cursor_line_column()
+    assert new_cols == cols - 2
+
+
 def test_dd_command(vim_bot):
     """Delete line."""
     main, editor_stack, editor, vim, qtbot = vim_bot

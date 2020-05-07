@@ -22,7 +22,7 @@ VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "hjklGyw"
+VIM_VISUAL_OPS = "dhjklGyw"
 VIM_VISUAL_PREFIX = "agi"
 
 RE_VIM_VISUAL_PREFIX = re.compile(
@@ -388,6 +388,14 @@ class VimKeys(object):
             pass
 
     # %% Deletions
+    def d(self, repeat):
+        editor = self._widget.editor()
+        selection = editor.get_extra_selections('vim_visual')[0]
+        cursor = selection.cursor
+        editor.setTextCursor(cursor)
+        editor.cut()
+        self._widget.update_vim_cursor()
+
     def dd(self, repeat):
         """Delete line."""
         editor = self._widget.editor()
