@@ -24,12 +24,7 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 # Spyder imports
 # from spyder.utils.fixtures import setup_editor
-try:
-    # Spyder 4
-    from spyder.plugins.editor.widgets.editor import EditorStack
-except ImportError:
-    # Spyder 3
-    from spyder.widgets.editor import EditorStack
+from spyder.plugins.editor.widgets.editor import EditorStack
 
 # Local imports
 from spyder_vim.vim import Vim
