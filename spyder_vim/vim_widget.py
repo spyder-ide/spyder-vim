@@ -22,7 +22,7 @@ VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "hjklGyw"
+VIM_VISUAL_OPS = "dhjklGyw"
 VIM_VISUAL_PREFIX = "agi"
 
 RE_VIM_VISUAL_PREFIX = re.compile(
@@ -388,12 +388,23 @@ class VimKeys(object):
             pass
 
     # %% Deletions
+    def d(self, repeat):
+        editor = self._widget.editor()
+        selection = editor.get_extra_selections('vim_visual')[0]
+        cursor = selection.cursor
+        editor.setTextCursor(cursor)
+        editor.cut()
+        self._widget.update_vim_cursor()
+
     def dd(self, repeat):
         """Delete line."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
-        cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat)
+        if not cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor, repeat):
+            cursor.movePosition(QTextCursor.Up)
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.movePosition(QTextCursor.End, QTextCursor.KeepAnchor, repeat)
         editor.setTextCursor(cursor)
         editor.cut()
         self._update_selection_type("line")
@@ -664,6 +675,14 @@ class VimLineEdit(QLineEdit):
         elif event.key() == Qt.Key_Return:
             self.setText(self.text() + "\r")
             self.parent().on_return()
+        elif event.key() == Qt.Key_Left and not self.text():
+            self.setText("h")
+        elif event.key() == Qt.Key_Right and not self.text():
+            self.setText("l")
+        elif event.key() == Qt.Key_Up and not self.text():
+            self.setText("k")
+        elif event.key() == Qt.Key_Down and not self.text():
+            self.setText("j")
         else:
             QLineEdit.keyPressEvent(self, event)
 
