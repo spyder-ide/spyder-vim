@@ -12,8 +12,15 @@ from qtpy.QtCore import Signal
 
 # Local imports
 from spyder.config.base import _
-from spyder.config.gui import fixed_shortcut
-from spyder.plugins import SpyderPluginWidget
+try:
+    # Spyder 4
+    from spyder.api.plugins import SpyderPluginWidget
+except ImportError:
+    # Spyder 3
+    from spyder.plugins import SpyderPluginWidget
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QShortcut, QVBoxLayout
+from qtpy.QtGui import QKeySequence
 
 
 # %%
@@ -28,8 +35,10 @@ class Vim(SpyderPluginWidget):  # pylint: disable=R0904
         """Main plugin constructor."""
         SpyderPluginWidget.__init__(self, parent)
         self.main = parent
-        self.initialize_plugin()
         self.vim_cmd = VimWidget(self.main.editor, self.main)
+        layout = QVBoxLayout()
+        layout.addWidget(self.vim_cmd)
+        self.setLayout(layout)
 
     # %% SpyderPlugin API
     def get_plugin_title(self):
@@ -42,10 +51,15 @@ class Vim(SpyderPluginWidget):  # pylint: disable=R0904
 
     def register_plugin(self):
         """Register plugin in Spyder's main window."""
+        try:
+            # Spyder 3 compatibility
+            super(Vim, self).register_plugin()
+        except NotImplementedError:
+            pass
         self.focus_changed.connect(self.main.plugin_focus_changed)
         self.vim_cmd.editor_widget.layout().addWidget(self.vim_cmd)
-        fixed_shortcut("Esc", self.vim_cmd.editor_widget.editorsplitter,
-                       self.vim_cmd.commandline.setFocus)
+        sc = QShortcut(QKeySequence("Esc"), self.vim_cmd.editor_widget.editorsplitter, self.vim_cmd.commandline.setFocus)
+        sc.setContext(Qt.WidgetWithChildrenShortcut)
 
     def get_focus_widget(self):
         """Return vim command line and give it focus."""

@@ -23,8 +23,7 @@ from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 # Spyder imports
-# from spyder.utils.fixtures import setup_editor
-from spyder.widgets.editor import EditorStack
+from spyder.plugins.editor.widgets.editor import EditorStack
 
 # Local imports
 from spyder_vim.vim import Vim
@@ -33,6 +32,13 @@ from spyder_vim.vim_widget import RE_VIM_PREFIX
 
 LOCATION = osp.realpath(osp.join(
     os.getcwd(), osp.dirname(__file__)))
+
+
+class VimTesting(Vim):
+    CONF_FILE = False
+
+    def __init(self, parent):
+        Vim.__init__(self, parent)
 
 
 class EditorMock(QWidget):
@@ -69,6 +75,8 @@ class MainMock(QWidget):
         layout.addWidget(self.editor)
         self.setLayout(layout)
 
+    add_dockwidget = Mock()
+
 
 @pytest.fixture
 def editor_bot(qtbot):
@@ -79,7 +87,6 @@ def editor_bot(qtbot):
             'line 3\n'
             'line 4')  # a newline is added at end
     editor_stack = EditorStack(None, [])
-    editor_stack.set_introspector(Mock())
     editor_stack.set_find_widget(Mock())
     editor_stack.set_io_actions(Mock(), Mock(), Mock(), Mock())
     finfo = editor_stack.new(osp.join(LOCATION, 'foo.txt'), 'utf-8', text)
@@ -93,7 +100,7 @@ def editor_bot(qtbot):
 def vim_bot(editor_bot):
     """Create an spyder-vim plugin instance."""
     main, editor_stack, editor, qtbot = editor_bot
-    vim = Vim(main)
+    vim = VimTesting(main)
     vim.register_plugin()
     return main, editor_stack, editor, vim, qtbot
 
