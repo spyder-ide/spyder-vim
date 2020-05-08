@@ -23,7 +23,6 @@ from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 # Spyder imports
-# from spyder.utils.fixtures import setup_editor
 from spyder.plugins.editor.widgets.editor import EditorStack
 
 # Local imports
@@ -34,11 +33,13 @@ from spyder_vim.vim_widget import RE_VIM_PREFIX
 LOCATION = osp.realpath(osp.join(
     os.getcwd(), osp.dirname(__file__)))
 
+
 class VimTesting(Vim):
     CONF_FILE = False
 
     def __init(self, parent):
         Vim.__init__(self, parent)
+
 
 class EditorMock(QWidget):
     """Editor plugin mock."""
