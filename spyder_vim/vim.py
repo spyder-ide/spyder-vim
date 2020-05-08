@@ -20,6 +20,7 @@ except ImportError:
     from spyder.plugins import SpyderPluginWidget
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QShortcut, QVBoxLayout
+from qtpy.QtGui import QKeySequence
 
 
 # %%
@@ -53,7 +54,7 @@ class Vim(SpyderPluginWidget):  # pylint: disable=R0904
         super(Vim, self).register_plugin()
         self.focus_changed.connect(self.main.plugin_focus_changed)
         self.vim_cmd.editor_widget.layout().addWidget(self.vim_cmd)
-        sc = QShortcut("Esc", self.vim_cmd.editor_widget.editorsplitter, self.vim_cmd.commandline.setFocus)
+        sc = QShortcut(QKeySequence("Esc"), self.vim_cmd.editor_widget.editorsplitter, self.vim_cmd.commandline.setFocus)
         sc.setContext(Qt.WidgetWithChildrenShortcut)
 
     def get_focus_widget(self):
