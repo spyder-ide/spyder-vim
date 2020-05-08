@@ -51,7 +51,11 @@ class Vim(SpyderPluginWidget):  # pylint: disable=R0904
 
     def register_plugin(self):
         """Register plugin in Spyder's main window."""
-        super(Vim, self).register_plugin()
+        try:
+            # Spyder 3 compatibility
+            super(Vim, self).register_plugin()
+        except NotImplementedError:
+            pass
         self.focus_changed.connect(self.main.plugin_focus_changed)
         self.vim_cmd.editor_widget.layout().addWidget(self.vim_cmd)
         sc = QShortcut(QKeySequence("Esc"), self.vim_cmd.editor_widget.editorsplitter, self.vim_cmd.commandline.setFocus)
