@@ -9,7 +9,9 @@ Spyder Plugin for executing Vim commands inside the code editor. We currently su
 [![OpenCollective Sponsors](https://opencollective.com/spyder/sponsors/badge.svg?color=blue)](#sponsors)
 
 ## Build status
-[![CircleCI](https://circleci.com/gh/spyder-ide/spyder-vim.svg?style=svg)](https://circleci.com/gh/spyder-ide/spyder-vim)
+![Linux tests](https://github.com/spyder-ide/spyder-vim/workflows/Linux%20tests/badge.svg)
+![Macos tests](https://github.com/spyder-ide/spyder-vim/workflows/Macos%20tests/badge.svg)
+![Window tests](https://github.com/spyder-ide/spyder-vim/workflows/Windows%20tests/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/spyder-ide/spyder-vim/badge.svg?branch=master)](https://coveralls.io/github/spyder-ide/spyder-vim?branch=master)
 
 ----
