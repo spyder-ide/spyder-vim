@@ -703,6 +703,9 @@ def test_ydollar_command(vim_bot):
     assert clipboard == 'ne 2'
 
 
+@pytest.mark.skipif(os.name == 'nt', reason="Does not work on windows!")
+# Note: this test does not work on Windows with pytest
+#       but work performed manually in Spyder
 def test_p_command_char_mode(vim_bot):
     """Paste characters after cursor."""
     main, editor_stack, editor, vim, qtbot = vim_bot
