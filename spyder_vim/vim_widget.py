@@ -135,7 +135,7 @@ class VimKeys(object):
             cursor.movePosition(QTextCursor.StartOfLine)
             cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
                                 n=lines)
-            line = cursor.selectedText()
+            line = cursor.selectedText().replace('\u2029', '\n')
             return line
 
     def _update_selection_type(self, selection_type):
@@ -471,16 +471,21 @@ class VimKeys(object):
         editor = self._widget.editor()
         selection = editor.get_extra_selections('vim_visual')[0]
         cursor = selection.cursor
-        text = cursor.selectedText()
+        if self.visual_mode == 'char':
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+        text = cursor.selectedText().replace('\u2029', '\n')
         QApplication.clipboard().setText(text)
+        cursor.setPosition(cursor.selectionStart())
         if self.visual_mode == 'char':
             self._update_selection_type('char')
+            editor.setTextCursor(cursor)
         elif self.visual_mode == 'line':
             self._update_selection_type('line')
+            editor.setTextCursor(self._prev_cursor)
+            self._move_cursor(QTextCursor.StartOfLine)
         else:
             self._update_selection_type('block')
-        editor.setTextCursor(self._prev_cursor)
-        self._move_cursor(QTextCursor.StartOfLine)
+            self._move_cursor(QTextCursor.StartOfLine)
         self.exit_visual_mode()
 
     def yy(self, repeat):
@@ -497,7 +502,7 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.NextWord, QTextCursor.KeepAnchor,
                             repeat - 1)
         cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
-        text = cursor.selectedText()
+        text = cursor.selectedText().replace('\u2029', '\n')
         QApplication.clipboard().setText(text)
 
     def yDOLLAR(self, repeat):
@@ -506,7 +511,7 @@ class VimKeys(object):
         cursor = editor.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
                             repeat)
-        text = cursor.selectedText()
+        text = cursor.selectedText().replace('\u2029', '\n')
         QApplication.clipboard().setText(text)
 
     def p(self, repeat):
@@ -543,6 +548,7 @@ class VimKeys(object):
             if len(lines) > 1:
                 cursor.setPosition(startPosition)
                 editor.setTextCursor(cursor)
+            self.h()
         else:
             # TODO: implement pasting block text after implementing visual mode
             pass
