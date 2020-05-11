@@ -539,7 +539,7 @@ def test_d_command(vim_bot):
     qtbot.keyClicks(cmd_line, 'd')
     editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     new_lines, new_cols = editor.get_cursor_line_column()
-    assert new_cols == cols - 2
+    assert new_cols == cols - 3
 
 
 def test_dd_command(vim_bot):

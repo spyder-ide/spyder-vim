@@ -392,6 +392,8 @@ class VimKeys(object):
         editor = self._widget.editor()
         selection = editor.get_extra_selections('vim_visual')[0]
         cursor = selection.cursor
+        if self.visual_mode == 'char':
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
         editor.setTextCursor(cursor)
         editor.cut()
         self._widget.update_vim_cursor()
