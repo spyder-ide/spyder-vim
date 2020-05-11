@@ -638,7 +638,7 @@ def test_y_command(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == 'lin'
+    assert clipboard == 'line'
 
 
 def test_yy_command(vim_bot):
@@ -650,7 +650,7 @@ def test_yy_command(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, 'V')
     qtbot.keyClicks(cmd_line, 'yy')
-    clipboard = QApplication.clipboard().text()
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
     assert clipboard[:-1] == 'line 2'
@@ -717,9 +717,9 @@ def test_p_command_char_mode(vim_bot):
     qtbot.keyClicks(cmd_line, 'y')
     qtbot.keyClicks(cmd_line, 'p')
     text = editor.toPlainText()
-    expected_text = ('   123\n'
-                     'l 123\n'
-                     'liine 1\n'
+    expected_text = ('    123\n'
+                     'lin123\n'
+                     'line 1\n'
                      'line 2\n'
                      'line 3\n'
                      'line 4')
@@ -851,7 +851,7 @@ def test_h_command_char_mode(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == 'li'
+    assert clipboard == 'lin'
 
 
 def test_j_command_char_mode(vim_bot):
@@ -870,7 +870,7 @@ def test_j_command_char_mode(vim_bot):
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
     # print(list('ne 2 line 3 li'))
-    assert clipboard == u'ne 2\u2029line 3\u2029li'
+    assert clipboard == 'ne 2\nline 3\nlin'
 
 
 def test_j_command_line_mode(vim_bot):
@@ -888,7 +888,7 @@ def test_j_command_line_mode(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == u'   123\u2029line 1\u2029'
+    assert clipboard == '   123\nline 1\n'
 
 
 def test_k_command_line_mode(vim_bot):
@@ -906,7 +906,7 @@ def test_k_command_line_mode(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == u'   123\u2029line 1\u2029line 2\u2029'
+    assert clipboard == '   123\nline 1\nline 2\n'
 
 
 def test_gg_command_line_mode(vim_bot):
@@ -924,7 +924,7 @@ def test_gg_command_line_mode(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == u'   123\u2029line 1\u2029line 2\u2029'
+    assert clipboard == '   123\nline 1\nline 2\n'
 
 
 def test_gg_command_char_mode(vim_bot):
@@ -942,4 +942,4 @@ def test_gg_command_char_mode(vim_bot):
     clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
-    assert clipboard == u'   123\u2029line 1\u2029li'
+    assert clipboard == '   123\nline 1\nlin'
