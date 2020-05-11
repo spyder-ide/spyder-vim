@@ -481,7 +481,7 @@ class VimKeys(object):
             editor.setTextCursor(cursor)
         elif self.visual_mode == 'line':
             self._update_selection_type('line')
-            editor.setTextCursor(self._prev_cursor)
+            editor.setTextCursor(cursor)
             self._move_cursor(QTextCursor.StartOfLine)
         else:
             self._update_selection_type('block')
@@ -540,6 +540,7 @@ class VimKeys(object):
             cursor.setPosition(startBlockPosition)
             if lines[0].strip():
                 cursor.movePosition(QTextCursor.NextWord)
+            cursor.movePosition(QTextCursor.StartOfLine)
             editor.setTextCursor(cursor)
         elif self._widget.selection_type[1] == 'char':
             startPosition = cursor.position()
