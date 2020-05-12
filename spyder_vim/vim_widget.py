@@ -396,7 +396,7 @@ class VimKeys(object):
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
         editor.setTextCursor(cursor)
         editor.cut()
-        self._widget.update_vim_cursor()
+        self.exit_visual_mode()
 
     def dd(self, repeat):
         """Delete line."""
