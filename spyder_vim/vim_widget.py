@@ -427,19 +427,23 @@ class VimKeys(object):
         editor.cut()
         self._widget.update_vim_cursor()
 
-    def dw(self, repeat):
+    def _cut_word(self, repeat, move_operation):
         """Cut words."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
-        cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor,
+        cursor.movePosition(move_operation, QTextCursor.KeepAnchor,
                             repeat)
         editor.setTextCursor(cursor)
         editor.cut()
         self._widget.update_vim_cursor()
 
+    def dw(self, repeat):
+        """Cut words."""
+        self._cut_word(repeat, QTextCursor.NextWord)
+
     def cw(self, repeat):
         """Cut words and edit."""
-        self.dw(repeat)
+        self._cut_word(repeat, QTextCursor.EndOfWord)
         self.i(repeat)
 
     def x(self, repeat=1):
