@@ -454,27 +454,26 @@ class VimKeys(object):
         self._cut_word(repeat, QTextCursor.EndOfWord)
         self.i(repeat)
 
-    def x(self, repeat=1):
+    def x(self, repeat):
         """Delete the character under cursor with delete from EndOfLine."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
-        cur_pos = cursor.position()
-        cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor,
-                            repeat)
-        line_start_pos = cursor.position()
-        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
-                            repeat)
-        line_end_pos = cursor.position()
-        """Don't delete blank lines (effectively ignoring \n)"""
-        if line_start_pos == line_end_pos:
-            return
-        cursor.setPosition(cur_pos, QTextCursor.KeepAnchor)
-        """At EndOfLine? If so move cursor for delete from EndOfLine"""
-        if cur_pos >= line_end_pos:
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, repeat)
+        text = cursor.selectedText().replace('\u2029', '\n')
+        break_index = text.find('\n')
+        if break_index != -1:
             cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor,
-                                repeat)
-        cursor.deleteChar()
-        editor.setTextCursor(cursor)
+                           len(text)-break_index)
+            editor.setTextCursor(cursor)
+            editor.cut()
+            self._move_cursor(QTextCursor.Left)
+        else:
+            editor.setTextCursor(cursor)
+            editor.cut()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, repeat)
+        if cursor.selectedText().replace('\u2029', '\n') == '\n':
+            self._move_cursor(QTextCursor.Left)
         self._widget.update_vim_cursor()
 
     # %% Copy
