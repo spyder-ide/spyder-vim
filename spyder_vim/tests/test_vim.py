@@ -210,11 +210,26 @@ def test_arrowdown_command(vim_bot):
     assert new_line == line + 1
 
 
+def test_l_shortchut_boundary(vim_bot):
+    """Test j command (Cursor moves right)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '10l')
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'l')
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col
+
+
 def test_l_shortchut(vim_bot):
     """Test j command (Cursor moves right)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
-    qtbot.keyPress(editor, Qt.Key_Left)
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
     cmd_line = vim.get_focus_widget()
     _, col = editor.get_cursor_line_column()
     qtbot.keyClicks(cmd_line, 'l')

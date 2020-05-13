@@ -208,8 +208,9 @@ class VimKeys(object):
     def l(self, repeat=1):  # analysis:ignore
         """Move cursor to the right."""
         cursor = self._editor_cursor()
-        if not cursor.atBlockEnd():
-            if self.visual_mode == 'char':
+        #if not cursor.atBlockEnd():
+        if self.visual_mode == 'char':
+            if not cursor.atBlockEnd():
                 prev_cursor_pos = self._prev_cursor.position()
                 start, end = self._get_selection_positions()
                 if cursor.position() >= \
@@ -217,9 +218,14 @@ class VimKeys(object):
                     self._move_selection(end + 1)
                 else:
                     self._move_selection(start + 1, move_start=True)
+                self._move_cursor(QTextCursor.Right)
+        else:
             self._move_cursor(QTextCursor.Right)
-            if repeat > 1:
-                self.l(repeat - 1)
+            cursor = self._editor_cursor()
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
+        if repeat > 1:
+            self.l(repeat - 1)
 
     def w(self, repeat=1):
         """Move to the next word."""
