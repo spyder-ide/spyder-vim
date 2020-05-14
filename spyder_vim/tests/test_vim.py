@@ -339,6 +339,26 @@ def test_space_command(vim_bot):
     assert new_col == col + 1
 
 
+def test_space_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, ' ')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'lliine 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_backspace_command(vim_bot):
     """Cursor moves to the left."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -357,6 +377,27 @@ def test_backspace_command(vim_bot):
     assert new_col == col - 1
 
 
+def test_backspace_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '\b')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'l\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_return_command(vim_bot):
     """Move to the start of the next line."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -373,6 +414,27 @@ def test_return_command(vim_bot):
     # print(line, col)
     # print(new_line, new_col)
     assert new_line == line + 1
+
+
+def test_return_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(4)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '\r')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'lline 3\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
 
 
 def test_dollar_command(vim_bot):
