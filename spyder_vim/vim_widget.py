@@ -208,7 +208,6 @@ class VimKeys(object):
     def l(self, repeat=1):  # analysis:ignore
         """Move cursor to the right."""
         cursor = self._editor_cursor()
-        #if not cursor.atBlockEnd():
         if self.visual_mode == 'char':
             if not cursor.atBlockEnd():
                 prev_cursor_pos = self._prev_cursor.position()
@@ -516,6 +515,8 @@ class VimKeys(object):
         if self.visual_mode == 'char':
             self._update_selection_type('char')
             editor.setTextCursor(cursor)
+            if text[0] == '\n':
+                self._move_cursor(QTextCursor.Left)
         elif self.visual_mode == 'line':
             self._update_selection_type('line')
             editor.setTextCursor(cursor)
@@ -557,7 +558,7 @@ class VimKeys(object):
             self.j()
             self.P(repeat)
         elif self._widget.selection_type[1] == 'char':
-            self.l()
+            self._move_cursor(QTextCursor.Right)
             self.P(repeat)
         else:
             # TODO: implement pasting block text after implementing visual mode
