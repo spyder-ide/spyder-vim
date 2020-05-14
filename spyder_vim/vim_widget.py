@@ -22,7 +22,7 @@ VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "dhjklGyw"
+VIM_VISUAL_OPS = "dhjklGyw$^0"
 VIM_VISUAL_PREFIX = "agi"
 
 RE_VIM_VISUAL_PREFIX = re.compile(
@@ -292,10 +292,28 @@ class VimKeys(object):
     def DOLLAR(self, repeat=1):
         """Go to the end of the current line."""
         self._move_cursor(QTextCursor.EndOfLine)
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
+        else:
+            self._move_cursor(QTextCursor.Left)
 
     def ZERO(self, repeat=1):
         """Go to the start of the current line."""
         self._move_cursor(QTextCursor.StartOfLine)
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
 
     def CARET(self, repeat=1):
         """Go to the first non-blank character of the line."""
@@ -307,6 +325,14 @@ class VimKeys(object):
             cursor.setPosition(cursor.block().position() + start_of_line)
             editor.setTextCursor(cursor)
             self._widget.update_vim_cursor()
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
 
     def G(self, repeat=-1):
         """Go to the first non-blank character of the last line."""

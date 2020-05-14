@@ -386,7 +386,30 @@ def test_dollar_command(vim_bot):
     line, col = editor.get_cursor_line_column()
     qtbot.keyClicks(cmd_line, '$')
     new_line, new_col = editor.get_cursor_line_column()
-    assert new_col == col + len('line 2')
+    assert new_col == col + len('line 2') - 1 
+
+
+def test_dollar_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '$')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'linne 2\n'
+                     'e 2\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
 
 
 def test_zero_command(vim_bot):
@@ -403,6 +426,27 @@ def test_zero_command(vim_bot):
     assert new_col == col - len('line 3')
 
 
+def test_0_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'l')
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '0')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('    123  123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_caret_command(vim_bot):
     """Go to the first non-blank character of the line."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -415,6 +459,27 @@ def test_caret_command(vim_bot):
     qtbot.keyClicks(cmd_line, '^')
     new_line, new_col = editor.get_cursor_line_column()
     assert new_col == col - len('123')
+
+
+def test_caret_command_char_mode(vim_bot):
+    """Go to the end of the current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'l')
+    qtbot.keyClicks(cmd_line, 'v')
+    qtbot.keyClicks(cmd_line, '^')
+    qtbot.keyClicks(cmd_line, 'y')
+    qtbot.keyClicks(cmd_line, 'p')
+    text = editor.toPlainText()
+    expected_text = ('   112323\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
 
 
 def test_uppercase_g_command(vim_bot):
