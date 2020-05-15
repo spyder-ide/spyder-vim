@@ -18,7 +18,7 @@ from qtpy.QtCore import Qt
 
 
 VIM_COMMAND_PREFIX = ":!/?"
-VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
+VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
@@ -63,6 +63,9 @@ class VimKeys(object):
         elif key[0] in "fF":
             leftover = key[1]
             key = key[0]
+        elif key[0] in "ia" and self.visual_mode == "char":
+            leftover = key[1]
+            key = key[0]
         for symbol, text in SYMBOLS_REPLACEMENT.items():
             key = key.replace(symbol, text)
         try:
@@ -73,11 +76,17 @@ class VimKeys(object):
             if leftover:
                 method(leftover, repeat)
             else:
-                method(repeat)
+                method(repeat=repeat)
 
     def _move_cursor(self, movement, repeat=1):
         cursor = self._editor_cursor()
         cursor.movePosition(movement, n=repeat)
+        self._widget.editor().setTextCursor(cursor)
+        self._widget.update_vim_cursor()
+
+    def _set_cursor(self, pos, mode=QTextCursor.KeepAnchor):
+        cursor = self._editor_cursor()
+        cursor.setPosition(pos, mode)
         self._widget.editor().setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
@@ -386,19 +395,126 @@ class VimKeys(object):
                     self._move_selection(cursor.position())
 
     # %% Insertion
-    def i(self, repeat):
+    def i(self, leftover=None, repeat=1):
         """Insert text before the cursor."""
-        self._widget.editor().setFocus()
+        if leftover is None:
+            self._widget.editor().setFocus()
+        elif leftover in list("\"\'([{<>}])"):
+            editor = self._widget.editor()
+            cursor = self._editor_cursor()
+            text = editor.toPlainText()
+            position = cursor.position()
+            # Find the starting position
+            if leftover == ")":
+                leftover = "("
+            elif leftover == "]":
+                leftover = "["
+            elif leftover == "}":
+                leftover = "{"
+            elif leftover == ">":
+                leftover = "<"
+            start_position = -1
+            for i in reversed(range(position)):
+                if text[i] == leftover:
+                    start_position = i + 1
+                    break
+            if start_position == -1:
+                return
+            # Find the matching character
+            stack = []
+            stack.append(leftover)
+            end_position = -1
+            for i, j in enumerate(text[start_position::]):
+                if j == ")" and stack[-1] == "(":
+                    stack.pop()
+                elif j == "]" and stack[-1] == "[":
+                    stack.pop()
+                elif j == "}" and stack[-1] == "{":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == ">" and stack[-1] == "<":
+                    stack.pop()
+                elif j in list("([{\"\'"):
+                    stack.append(j)
+                if not stack:
+                     end_position = i + start_position - 1
+                     break
+
+            selection = editor.get_extra_selections('vim_visual')[0]
+            selection.cursor.setPosition(start_position)
+            selection.cursor.setPosition(end_position,
+                                             QTextCursor.KeepAnchor)
+            editor.set_extra_selections('vim_visual', [selection])
+            editor.update_extra_selections()
+            self._set_cursor(end_position)
+
+
+            
 
     def I(self, repeat):
         """Insert text before the first non-blank in the line."""
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
 
-    def a(self, repeat):
+    def a(self, leftover=None, repeat=1):
         """Append text after the cursor."""
-        self.l()
-        self._widget.editor().setFocus()
+        if not leftover:
+            self.l()
+            self._widget.editor().setFocus()
+        elif leftover in list("\"\'([{<>}])"):
+            editor = self._widget.editor()
+            cursor = self._editor_cursor()
+            text = editor.toPlainText()
+            position = cursor.position()
+            # Find the starting position
+            if leftover == ")":
+                leftover = "("
+            elif leftover == "]":
+                leftover = "["
+            elif leftover == "}":
+                leftover = "{"
+            elif leftover == ">":
+                leftover = "<"
+            start_position = -1
+            for i in reversed(range(position)):
+                if text[i] == leftover:
+                    start_position = i + 1
+                    break
+            if start_position == -1:
+                return
+            # Find the matching character
+            stack = []
+            stack.append(leftover)
+            end_position = -1
+            for i, j in enumerate(text[start_position::]):
+                if j == ")" and stack[-1] == "(":
+                    stack.pop()
+                elif j == "]" and stack[-1] == "[":
+                    stack.pop()
+                elif j == "}" and stack[-1] == "{":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == ">" and stack[-1] == "<":
+                    stack.pop()
+                elif j in list("([{\"\'"):
+                    stack.append(j)
+                if not stack:
+                     end_position = i + start_position - 1
+                     break
+
+            selection = editor.get_extra_selections('vim_visual')[0]
+            selection.cursor.setPosition(start_position-1)
+            selection.cursor.setPosition(end_position+1,
+                                             QTextCursor.KeepAnchor)
+            editor.set_extra_selections('vim_visual', [selection])
+            editor.update_extra_selections()
+            self._set_cursor(end_position+1)
 
     def A(self, repeat):
         """Append text at the end of the line."""
@@ -805,6 +921,10 @@ class VimWidget(QWidget):
             repeat, key, leftover = 1, "0", text[1:]
         elif text.startswith("G"):
             repeat, key, leftover = -1, "G", text[1:]
+        elif text == "i" and not self.vim_keys.visual_mode:
+            repeat, key, leftover = -1, "i", ""
+        elif text == "a" and not self.vim_keys.visual_mode:
+            repeat, key, leftover = -1, "a", ""
         else:
             if self.vim_keys.visual_mode and text[0] not in VIM_ARG_PREFIX:
                 match = RE_VIM_VISUAL_PREFIX.match(text)
