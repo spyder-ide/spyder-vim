@@ -24,6 +24,7 @@ RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
 VIM_VISUAL_OPS = "dhjklGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
+VIM_ARG_PREFIX = "fF"
 
 RE_VIM_VISUAL_PREFIX = re.compile(
     RE_VIM_PREFIX_STR.format(prefixes=VIM_VISUAL_PREFIX))
@@ -805,7 +806,7 @@ class VimWidget(QWidget):
         elif text.startswith("G"):
             repeat, key, leftover = -1, "G", text[1:]
         else:
-            if self.vim_keys.visual_mode:
+            if self.vim_keys.visual_mode and text[0] not in VIM_ARG_PREFIX:
                 match = RE_VIM_VISUAL_PREFIX.match(text)
             else:
                 match = RE_VIM_PREFIX.match(text)
