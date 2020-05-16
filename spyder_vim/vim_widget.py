@@ -18,12 +18,13 @@ from qtpy.QtCore import Qt
 
 
 VIM_COMMAND_PREFIX = ":!/?"
-VIM_PREFIX = "cdfFgmrtTyzZ@'`\"<>"
+VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "dhjklGyw"
+VIM_VISUAL_OPS = "dhjklGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
+VIM_ARG_PREFIX = "fF"
 
 RE_VIM_VISUAL_PREFIX = re.compile(
     RE_VIM_PREFIX_STR.format(prefixes=VIM_VISUAL_PREFIX))
@@ -62,6 +63,9 @@ class VimKeys(object):
         elif key[0] in "fF":
             leftover = key[1]
             key = key[0]
+        elif key[0] in "ia" and self.visual_mode == "char":
+            leftover = key[1]
+            key = key[0]
         for symbol, text in SYMBOLS_REPLACEMENT.items():
             key = key.replace(symbol, text)
         try:
@@ -72,11 +76,17 @@ class VimKeys(object):
             if leftover:
                 method(leftover, repeat)
             else:
-                method(repeat)
+                method(repeat=repeat)
 
     def _move_cursor(self, movement, repeat=1):
         cursor = self._editor_cursor()
         cursor.movePosition(movement, n=repeat)
+        self._widget.editor().setTextCursor(cursor)
+        self._widget.update_vim_cursor()
+
+    def _set_cursor(self, pos, mode=QTextCursor.KeepAnchor):
+        cursor = self._editor_cursor()
+        cursor.setPosition(pos, mode)
         self._widget.editor().setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
@@ -208,8 +218,8 @@ class VimKeys(object):
     def l(self, repeat=1):  # analysis:ignore
         """Move cursor to the right."""
         cursor = self._editor_cursor()
-        if not cursor.atBlockEnd():
-            if self.visual_mode == 'char':
+        if self.visual_mode == 'char':
+            if not cursor.atBlockEnd():
                 prev_cursor_pos = self._prev_cursor.position()
                 start, end = self._get_selection_positions()
                 if cursor.position() >= \
@@ -217,9 +227,14 @@ class VimKeys(object):
                     self._move_selection(end + 1)
                 else:
                     self._move_selection(start + 1, move_start=True)
+                self._move_cursor(QTextCursor.Right)
+        else:
             self._move_cursor(QTextCursor.Right)
-            if repeat > 1:
-                self.l(repeat - 1)
+            cursor = self._editor_cursor()
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
+        if repeat > 1:
+            self.l(repeat - 1)
 
     def w(self, repeat=1):
         """Move to the next word."""
@@ -265,31 +280,71 @@ class VimKeys(object):
     def SPACE(self, repeat=1):
         """Move cursor to the right."""
         self._move_cursor(QTextCursor.Right, repeat)
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        if (self.visual_mode == 'char'):
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Right, repeat)
 
     def BACKSPACE(self, repeat=1):
         """Move cursor to the left."""
         self._move_cursor(QTextCursor.Left, repeat)
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        if (self.visual_mode == 'char'):
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left, repeat)
 
     def RETURN(self, repeat=1):
         """Move to the start of the next line."""
+        self._move_cursor(QTextCursor.Down, repeat)
+        self._move_cursor(QTextCursor.StartOfLine, repeat)
         editor = self._widget.editor()
         cursor = editor.textCursor()
-        cursor.movePosition(QTextCursor.NextBlock, n=repeat)
-        text = self._get_line(cursor)
-        if text.isspace() or not text:
-            pass
-        elif text[0].isspace():
-            cursor.movePosition(QTextCursor.NextWord)
-        editor.setTextCursor(cursor)
-        self._widget.update_vim_cursor()
+        if (self.visual_mode == 'char'):
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
 
     def DOLLAR(self, repeat=1):
         """Go to the end of the current line."""
         self._move_cursor(QTextCursor.EndOfLine)
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
+        else:
+            self._move_cursor(QTextCursor.Left)
 
     def ZERO(self, repeat=1):
         """Go to the start of the current line."""
         self._move_cursor(QTextCursor.StartOfLine)
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
 
     def CARET(self, repeat=1):
         """Go to the first non-blank character of the line."""
@@ -301,6 +356,14 @@ class VimKeys(object):
             cursor.setPosition(cursor.block().position() + start_of_line)
             editor.setTextCursor(cursor)
             self._widget.update_vim_cursor()
+        if (self.visual_mode == 'char'):
+            editor = self._widget.editor()
+            cursor = editor.textCursor()
+            start, end = self._get_selection_positions()
+            if cursor.position() < start:
+                self._move_selection(cursor.position(), move_start=True)
+            else:
+                self._move_selection(cursor.position())
 
     def G(self, repeat=-1):
         """Go to the first non-blank character of the last line."""
@@ -332,19 +395,126 @@ class VimKeys(object):
                     self._move_selection(cursor.position())
 
     # %% Insertion
-    def i(self, repeat):
+    def i(self, leftover=None, repeat=1):
         """Insert text before the cursor."""
-        self._widget.editor().setFocus()
+        if leftover is None:
+            self._widget.editor().setFocus()
+        elif leftover in list("\"\'([{<>}])"):
+            editor = self._widget.editor()
+            cursor = self._editor_cursor()
+            text = editor.toPlainText()
+            position = cursor.position()
+            # Find the starting position
+            if leftover == ")":
+                leftover = "("
+            elif leftover == "]":
+                leftover = "["
+            elif leftover == "}":
+                leftover = "{"
+            elif leftover == ">":
+                leftover = "<"
+            start_position = -1
+            for i in reversed(range(position)):
+                if text[i] == leftover:
+                    start_position = i + 1
+                    break
+            if start_position == -1:
+                return
+            # Find the matching character
+            stack = []
+            stack.append(leftover)
+            end_position = -1
+            for i, j in enumerate(text[start_position::]):
+                if j == ")" and stack[-1] == "(":
+                    stack.pop()
+                elif j == "]" and stack[-1] == "[":
+                    stack.pop()
+                elif j == "}" and stack[-1] == "{":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == ">" and stack[-1] == "<":
+                    stack.pop()
+                elif j in list("([{\"\'"):
+                    stack.append(j)
+                if not stack:
+                     end_position = i + start_position - 1
+                     break
+
+            selection = editor.get_extra_selections('vim_visual')[0]
+            selection.cursor.setPosition(start_position)
+            selection.cursor.setPosition(end_position,
+                                             QTextCursor.KeepAnchor)
+            editor.set_extra_selections('vim_visual', [selection])
+            editor.update_extra_selections()
+            self._set_cursor(end_position)
+
+
+            
 
     def I(self, repeat):
         """Insert text before the first non-blank in the line."""
         self._move_cursor(QTextCursor.StartOfLine)
         self._widget.editor().setFocus()
 
-    def a(self, repeat):
+    def a(self, leftover=None, repeat=1):
         """Append text after the cursor."""
-        self.l()
-        self._widget.editor().setFocus()
+        if not leftover:
+            self.l()
+            self._widget.editor().setFocus()
+        elif leftover in list("\"\'([{<>}])"):
+            editor = self._widget.editor()
+            cursor = self._editor_cursor()
+            text = editor.toPlainText()
+            position = cursor.position()
+            # Find the starting position
+            if leftover == ")":
+                leftover = "("
+            elif leftover == "]":
+                leftover = "["
+            elif leftover == "}":
+                leftover = "{"
+            elif leftover == ">":
+                leftover = "<"
+            start_position = -1
+            for i in reversed(range(position)):
+                if text[i] == leftover:
+                    start_position = i + 1
+                    break
+            if start_position == -1:
+                return
+            # Find the matching character
+            stack = []
+            stack.append(leftover)
+            end_position = -1
+            for i, j in enumerate(text[start_position::]):
+                if j == ")" and stack[-1] == "(":
+                    stack.pop()
+                elif j == "]" and stack[-1] == "[":
+                    stack.pop()
+                elif j == "}" and stack[-1] == "{":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == ">" and stack[-1] == "<":
+                    stack.pop()
+                elif j in list("([{\"\'"):
+                    stack.append(j)
+                if not stack:
+                     end_position = i + start_position - 1
+                     break
+
+            selection = editor.get_extra_selections('vim_visual')[0]
+            selection.cursor.setPosition(start_position-1)
+            selection.cursor.setPosition(end_position+1,
+                                             QTextCursor.KeepAnchor)
+            editor.set_extra_selections('vim_visual', [selection])
+            editor.update_extra_selections()
+            self._set_cursor(end_position+1)
 
     def A(self, repeat):
         """Append text at the end of the line."""
@@ -392,9 +562,11 @@ class VimKeys(object):
         editor = self._widget.editor()
         selection = editor.get_extra_selections('vim_visual')[0]
         cursor = selection.cursor
+        if self.visual_mode == 'char':
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
         editor.setTextCursor(cursor)
         editor.cut()
-        self._widget.update_vim_cursor()
+        self.exit_visual_mode()
 
     def dd(self, repeat):
         """Delete line."""
@@ -446,27 +618,26 @@ class VimKeys(object):
         self._cut_word(repeat, QTextCursor.EndOfWord)
         self.i(repeat)
 
-    def x(self, repeat=1):
+    def x(self, repeat):
         """Delete the character under cursor with delete from EndOfLine."""
         editor = self._widget.editor()
         cursor = editor.textCursor()
-        cur_pos = cursor.position()
-        cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor,
-                            repeat)
-        line_start_pos = cursor.position()
-        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
-                            repeat)
-        line_end_pos = cursor.position()
-        """Don't delete blank lines (effectively ignoring \n)"""
-        if line_start_pos == line_end_pos:
-            return
-        cursor.setPosition(cur_pos, QTextCursor.KeepAnchor)
-        """At EndOfLine? If so move cursor for delete from EndOfLine"""
-        if cur_pos >= line_end_pos:
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, repeat)
+        text = cursor.selectedText().replace('\u2029', '\n')
+        break_index = text.find('\n')
+        if break_index != -1:
             cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor,
-                                repeat)
-        cursor.deleteChar()
-        editor.setTextCursor(cursor)
+                           len(text)-break_index)
+            editor.setTextCursor(cursor)
+            editor.cut()
+            self._move_cursor(QTextCursor.Left)
+        else:
+            editor.setTextCursor(cursor)
+            editor.cut()
+        cursor = editor.textCursor()
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, repeat)
+        if cursor.selectedText().replace('\u2029', '\n') == '\n':
+            self._move_cursor(QTextCursor.Left)
         self._widget.update_vim_cursor()
 
     # %% Copy
@@ -483,6 +654,8 @@ class VimKeys(object):
         if self.visual_mode == 'char':
             self._update_selection_type('char')
             editor.setTextCursor(cursor)
+            if text[0] == '\n':
+                self._move_cursor(QTextCursor.Left)
         elif self.visual_mode == 'line':
             self._update_selection_type('line')
             editor.setTextCursor(cursor)
@@ -524,7 +697,7 @@ class VimKeys(object):
             self.j()
             self.P(repeat)
         elif self._widget.selection_type[1] == 'char':
-            self.l()
+            self._move_cursor(QTextCursor.Right)
             self.P(repeat)
         else:
             # TODO: implement pasting block text after implementing visual mode
@@ -748,8 +921,12 @@ class VimWidget(QWidget):
             repeat, key, leftover = 1, "0", text[1:]
         elif text.startswith("G"):
             repeat, key, leftover = -1, "G", text[1:]
+        elif text == "i" and not self.vim_keys.visual_mode:
+            repeat, key, leftover = -1, "i", ""
+        elif text == "a" and not self.vim_keys.visual_mode:
+            repeat, key, leftover = -1, "a", ""
         else:
-            if self.vim_keys.visual_mode:
+            if self.vim_keys.visual_mode and text[0] not in VIM_ARG_PREFIX:
                 match = RE_VIM_VISUAL_PREFIX.match(text)
             else:
                 match = RE_VIM_PREFIX.match(text)
