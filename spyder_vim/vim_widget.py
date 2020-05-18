@@ -9,12 +9,13 @@
 
 
 import re
+import bisect
 from time import time
 
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy, QApplication)
-from qtpy.QtGui import QTextCursor
-from qtpy.QtCore import Qt
+from qtpy.QtGui import QTextCursor, QTextDocument
+from qtpy.QtCore import Qt, QRegExp
 
 
 VIM_COMMAND_PREFIX = ":!/?"
@@ -22,7 +23,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "dhjklGyw$^0 \r\b"
+VIM_VISUAL_OPS = "dhjklnNGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -54,6 +55,7 @@ class VimKeys(object):
         self._widget = widget
         self._prev_cursor = None
         self.visual_mode = False
+        self.search_dict = {}
 
     def __call__(self, key, repeat):
         """Execute vim command."""
@@ -158,6 +160,61 @@ class VimKeys(object):
         editor.clear_extra_selections('vim_visual')
         self._widget.update_vim_cursor()
         self.visual_mode = False
+
+    def search(self, key, reverse=False):
+        """"Search regular expressions key inside document"""
+        editor = self._widget.editor()
+        cursor = QTextCursor(editor.document())
+        cursor.movePosition(QTextCursor.Start)
+        # Find key in document forward
+        search_stack = []
+        cursor = editor.document().find(key)
+        selection = QTextEdit.ExtraSelection()
+        back = Qt.black
+        fore = Qt.blue
+        while not cursor.isNull():
+            selection = QTextEdit.ExtraSelection()
+            selection.format.setBackground(fore)
+            selection.format.setForeground(back)
+            selection.cursor = cursor
+            search_stack.append(selection)
+            cursor = editor.document().find(QRegExp(key), cursor,
+                                        QTextDocument.FindCaseSensitively)
+        editor.set_extra_selections('search', [i for i in search_stack])
+        editor.update_extra_selections()
+        search_dict = {"stack": search_stack, "reverse": reverse}
+        return search_dict
+
+    def n(self, repeat=1, reverse=False):
+        """Move cursor to the next searched key"""
+        cursor = self._editor_cursor()
+        search_stack = self.search_dict["stack"]
+        if not search_stack:
+            return
+        if not self.search_dict["reverse"]^reverse:
+            place = bisect.bisect([i.cursor.selectionStart() 
+                          for i in search_stack], cursor.position())
+            if place == len(search_stack):
+                self._set_cursor(search_stack[0].cursor.selectionStart(),
+                                 QTextCursor.MoveAnchor)
+            else:
+                self._set_cursor(search_stack[place].cursor.selectionStart(),
+                                 QTextCursor.MoveAnchor)
+        else:
+            place = bisect.bisect_left([i.cursor.selectionStart() 
+                          for i in search_stack], cursor.position())
+            if place == 0:
+                self._set_cursor(search_stack[-1].cursor.selectionStart(),
+                                 QTextCursor.MoveAnchor)
+            else:
+                self._set_cursor(search_stack[place-1].cursor.selectionStart(),
+                                QTextCursor.MoveAnchor)
+        if repeat > 1:
+            self.n(repeat - 1, reverse=reverse)
+
+    def N(self, repeat=1):
+        """Move cursor to the previous searched key"""
+        self.n(repeat, reverse=True)
 
     # %% Movement
     def h(self, repeat=1):
@@ -948,15 +1005,15 @@ class VimWidget(QWidget):
         if not text:
             return
         cmd_type = text[0]
-        print(text)
+        cmd = text[1::].rstrip()
         if cmd_type == ":":  # Vim command
             self.vim_commands(text[1:])
         elif cmd_type == "!":  # Shell command
             pass
         elif cmd_type == "/":  # Forward search
-            pass
+            self.vim_keys.search_dict = self.vim_keys.search(cmd)
         elif cmd_type == "?":  # Reverse search
-            pass
+            self.vim_keys.search_dict = self.vim_keys.search(cmd, reverse=True)
         self.commandline.clear()
 
     def on_copy(self):
