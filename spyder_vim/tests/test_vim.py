@@ -153,6 +153,44 @@ def test_three_chars_with_zero_repeat():
     assert groups == ("20", "D", "")
 
 
+def test_forward_search_command(vim_bot):
+    """Test search forward command (/)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '/line\r')
+    index_test = []
+    for i in range(5):
+        qtbot.keyClicks(cmd_line, 'n')
+        line, _ = editor.get_cursor_line_column()
+        index_test.append(line)
+    for i in range(5):
+        qtbot.keyClicks(cmd_line, 'N')
+        line, _ = editor.get_cursor_line_column()
+        index_test.append(line)
+    assert index_test == [1, 2, 3, 4, 1, 4, 3, 2, 1, 4]
+
+
+def test_backward_search_command(vim_bot):
+    """Test search backward command (/)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '?line\r')
+    index_test = []
+    for i in range(5):
+        qtbot.keyClicks(cmd_line, 'n')
+        line, _ = editor.get_cursor_line_column()
+        index_test.append(line)
+    for i in range(5):
+        qtbot.keyClicks(cmd_line, 'N')
+        line, _ = editor.get_cursor_line_column()
+        index_test.append(line)
+    assert index_test == [4, 3, 2, 1, 4, 1, 2, 3, 4, 1]
+
+
 def test_a_command_open_bracket(vim_bot):
     """Test a selection"""
     main, editor_stack, editor, vim, qtbot = vim_bot
