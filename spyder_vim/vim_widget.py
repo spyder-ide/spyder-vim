@@ -23,7 +23,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdhjklnNGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdehjklnNGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -324,10 +324,16 @@ class VimKeys(object):
         """
         cursor = self._editor_cursor()
         cur_pos_in_block = cursor.positionInBlock()
-        char = self._get_line(cursor)[cur_pos_in_block:cur_pos_in_block + 1]
+        char = self._get_line(cursor)[cur_pos_in_block:cur_pos_in_block + 2]
         if not char.isalnum():
-            self.w(repeat)
-        self._move_cursor(QTextCursor.EndOfWord, repeat)
+            self.w(repeat=1)
+        self._move_cursor(QTextCursor.EndOfWord)
+        self.h(repeat=1)
+        if self.visual_mode == 'char':
+            cursor = self._editor_cursor()
+            self._move_selection(cursor.position())
+        if repeat > 1:
+            self.e(repeat - 1)
 
     def f(self, leftover, repeat=1):
         """Go to the next ocurrence of a character."""
