@@ -606,6 +606,18 @@ def test_w_shortchut(vim_bot):
     assert new_col == col + 1
 
 
+def test_w_shortchut_char_mode(vim_bot):
+    """Test w command (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2wy')
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
+    assert clipboard == 'line 1\nl'  
+
+
 def test_b_shortchut(vim_bot):
     """Test b command (Cursor moves to the previous word)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -617,6 +629,43 @@ def test_b_shortchut(vim_bot):
     qtbot.keyClicks(cmd_line, 'b')
     _, new_col = editor.get_cursor_line_column()
     assert new_col == col - 1
+
+
+def test_b_shortchut_char_mode(vim_bot):
+    """Test b command (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2byp')
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
+    assert clipboard == 'line 1\nl'  
+
+
+def test_e_shortchut(vim_bot):
+    """Test e command (Cursor moves to the previous word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    qtbot.keyPress(editor, Qt.Key_Left)
+    editor.moveCursor(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    _, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'e')
+    _, new_col = editor.get_cursor_line_column()
+    assert new_col == col - 1
+
+
+def test_e_shortchut_char_mode(vim_bot):
+    """Test b command (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v3ey')
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
+    assert clipboard == 'line 2\nline'  
 
 
 def test_f_shortchut(vim_bot):
