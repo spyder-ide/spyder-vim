@@ -631,6 +631,18 @@ def test_b_shortchut(vim_bot):
     assert new_col == col - 1
 
 
+def test_b_shortchut_char_mode(vim_bot):
+    """Test b command (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2byp')
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
+    assert clipboard == 'line 1\nl'  
+
+
 def test_f_shortchut(vim_bot):
     """Cursor moves to the next ocurrence of a character."""
     main, editor_stack, editor, vim, qtbot = vim_bot

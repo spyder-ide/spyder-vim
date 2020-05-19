@@ -23,7 +23,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "dhjklnNGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdhjklnNGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -307,7 +307,15 @@ class VimKeys(object):
 
     def b(self, repeat=1):
         """Move to the previous word."""
-        self._move_cursor(QTextCursor.PreviousWord, repeat)
+        self._move_cursor(QTextCursor.PreviousWord)
+        cursor = self._editor_cursor()
+        if cursor.atBlockEnd():
+            self._move_cursor(QTextCursor.PreviousWord)
+        if self.visual_mode == 'char':
+            cursor = self._editor_cursor()
+            self._move_selection(cursor.position(), move_start=True)
+        if repeat > 1:
+            self.b(repeat - 1)
 
     def e(self, repeat=1):
         """Go to end of current word.
