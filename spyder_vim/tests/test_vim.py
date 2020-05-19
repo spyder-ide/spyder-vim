@@ -606,6 +606,18 @@ def test_w_shortchut(vim_bot):
     assert new_col == col + 1
 
 
+def test_w_shortchut_char_mode(vim_bot):
+    """Test w command (Cursor moves to the next word)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2wy')
+    clipboard = QApplication.clipboard().text().replace('\u2029', '\n')
+    assert clipboard == 'line 1\nl'  
+
+
 def test_b_shortchut(vim_bot):
     """Test b command (Cursor moves to the previous word)."""
     main, editor_stack, editor, vim, qtbot = vim_bot

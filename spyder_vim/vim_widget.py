@@ -295,10 +295,15 @@ class VimKeys(object):
 
     def w(self, repeat=1):
         """Move to the next word."""
-        self._move_cursor(QTextCursor.NextWord, repeat)
+        self._move_cursor(QTextCursor.NextWord)
+        cursor = self._editor_cursor()
+        if cursor.atBlockEnd():
+            self._move_cursor(QTextCursor.NextWord)
         if self.visual_mode == 'char':
             cursor = self._editor_cursor()
             self._move_selection(cursor.position())
+        if repeat > 1:
+            self.w(repeat - 1)
 
     def b(self, repeat=1):
         """Move to the previous word."""
