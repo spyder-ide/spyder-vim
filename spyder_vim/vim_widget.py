@@ -15,7 +15,7 @@ from time import time
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy, QApplication)
 from qtpy.QtGui import QTextCursor, QTextDocument
-from qtpy.QtCore import Qt, QRegExp
+from qtpy.QtCore import Qt, QRegularExpression
 
 
 VIM_COMMAND_PREFIX = ":!/?"
@@ -168,7 +168,8 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Start)
         # Find key in document forward
         search_stack = []
-        cursor = editor.document().find(key)
+        cursor = editor.document().find(QRegularExpression(key),
+                        options=QTextDocument.FindCaseSensitively)
         selection = QTextEdit.ExtraSelection()
         back = Qt.black
         fore = Qt.blue
@@ -178,7 +179,7 @@ class VimKeys(object):
             selection.format.setForeground(back)
             selection.cursor = cursor
             search_stack.append(selection)
-            cursor = editor.document().find(QRegExp(key), cursor,
+            cursor = editor.document().find(QRegularExpression(key), cursor,
                                         QTextDocument.FindCaseSensitively)
         editor.set_extra_selections('search', [i for i in search_stack])
         editor.update_extra_selections()
