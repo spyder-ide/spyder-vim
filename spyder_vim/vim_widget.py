@@ -168,7 +168,8 @@ class VimKeys(object):
         cursor.movePosition(QTextCursor.Start)
         # Find key in document forward
         search_stack = []
-        cursor = editor.document().find(QRegularExpression(key))
+        cursor = editor.document().find(QRegularExpression(key),
+                        options=QTextDocument.FindCaseSensitively)
         selection = QTextEdit.ExtraSelection()
         back = Qt.black
         fore = Qt.blue
