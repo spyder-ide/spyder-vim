@@ -17,6 +17,8 @@ from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
 from qtpy.QtGui import QTextCursor, QTextDocument
 from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal
 
+from spyder.config.gui import get_color_scheme, is_dark_interface
+
 
 VIM_COMMAND_PREFIX = ":!/?"
 VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
@@ -1015,7 +1017,9 @@ class VimWidget(QWidget):
 
         hlayout = QHBoxLayout()
         self.status_label = QLabel("INSERT")
-        self.setStyleSheet("QLabel { background-color: blue }")
+        self.status_label.setFixedWidth(60)
+        self.status_label.setAlignment(Qt.AlignCenter)
+        self.on_mode_changed("insert")
         hlayout.addWidget(self.status_label)
         hlayout.addWidget(self.commandline)
         hlayout.setContentsMargins(5, 0, 0, 5)
@@ -1029,18 +1033,34 @@ class VimWidget(QWidget):
         self.vim_keys.mode_changed.connect(self.on_mode_changed)
 
     def on_mode_changed(self, mode):
-        if mode == "visual":
-            self.status_label.setText("VISUAL")
-            self.setStyleSheet("QLabel { background-color: orange }")
-        elif mode == "normal":
-            self.status_label.setText("NORMAL")
-            self.setStyleSheet("QLabel { background-color: green }")
-        elif mode == "vline":
-            self.status_label.setText("V-LINE")
-            self.setStyleSheet("QLabel { background-color: orange }")
-        elif mode == "insert":
-            self.status_label.setText("INSERT")
-            self.setStyleSheet("QLabel { background-color: blue }")
+        if not is_dark_interface():
+            self.status_label.setStyleSheet("QLabel { color: black, padding:2px }")
+            if mode == "visual":
+                self.status_label.setText("VISUAL")
+                self.setStyleSheet("QLabel { background-color: #ffcc99 }")
+            elif mode == "normal":
+                self.status_label.setText("NORMAL")
+                self.setStyleSheet("QLabel { background-color: #85e085 }")
+            elif mode == "vline":
+                self.status_label.setText("V-LINE")
+                self.setStyleSheet("QLabel { background-color: #ffcc99 }")
+            elif mode == "insert":
+                self.status_label.setText("INSERT")
+                self.setStyleSheet("QLabel { background-color: #b3c6ff }")
+        else:
+            self.status_label.setStyleSheet("QLabel { color: white, padding:2px }")
+            if mode == "visual":
+                self.status_label.setText("VISUAL")
+                self.setStyleSheet("QLabel { background-color: #ff8000 }")
+            elif mode == "normal":
+                self.status_label.setText("NORMAL")
+                self.setStyleSheet("QLabel { background-color: #29a329 }")
+            elif mode == "vline":
+                self.status_label.setText("V-LINE")
+                self.setStyleSheet("QLabel { background-color: #ff8000 }")
+            elif mode == "insert":
+                self.status_label.setText("INSERT")
+                self.setStyleSheet("QLabel { background-color: #3366ff }")
 
     def on_text_changed(self, text):
         """Parse input command."""
