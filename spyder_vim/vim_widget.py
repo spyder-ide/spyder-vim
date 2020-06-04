@@ -653,6 +653,11 @@ class VimKeys(object):
         cursor = selection.cursor
         if self.visual_mode == 'char':
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+            self._update_selection_type('char')
+        elif self.visual_mode == 'line':
+            self._update_selection_type('line')
+        else:
+            self._update_selection_type('block')
         editor.setTextCursor(cursor)
         editor.cut()
         self.exit_visual_mode()
