@@ -1333,6 +1333,42 @@ def test_p_command_char_mode(vim_bot):
     assert text == expected_text
 
 
+def test_p_command_char_mode_line_selection(vim_bot):
+    """Paste line below current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '2lv2ly')
+    qtbot.keyClicks(cmd_line, 'jVp')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'ne \n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_p_command_char_mode_char_selection(vim_bot):
+    """Paste line below current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '2lv2ly')
+    qtbot.keyClicks(cmd_line, 'jv2hp')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'ne e 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_p_command_line_mode(vim_bot):
     """Paste line below current line."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -1356,6 +1392,44 @@ def test_p_command_line_mode(vim_bot):
     # clipboard = QApplication.clipboard().text()
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
+    assert text == expected_text
+
+
+def test_p_command_line_mode_char_selection(vim_bot):
+    """Paste line below current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'Vy')
+    qtbot.keyClicks(cmd_line, 'j2lv2lp')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'li\n'
+                     'line 2\n'
+                     '3\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_p_command_line_mode_line_selection(vim_bot):
+    """Paste line below current line."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'Vy')
+    qtbot.keyClicks(cmd_line, 'jVp')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 2\n'
+                     'line 4')
     assert text == expected_text
 
 

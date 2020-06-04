@@ -23,7 +23,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehjklnNGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdehjklnNpPGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -653,6 +653,11 @@ class VimKeys(object):
         cursor = selection.cursor
         if self.visual_mode == 'char':
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+            self._update_selection_type('char')
+        elif self.visual_mode == 'line':
+            self._update_selection_type('line')
+        else:
+            self._update_selection_type('block')
         editor.setTextCursor(cursor)
         editor.cut()
         self.exit_visual_mode()
@@ -783,7 +788,7 @@ class VimKeys(object):
     def p(self, repeat):
         """Paste line below current line, paste characters after cursor."""
         if self._widget.selection_type[1] == 'line':
-            self.j()
+            self._move_cursor(QTextCursor.Down)
             self.P(repeat)
         elif self._widget.selection_type[1] == 'char':
             self._move_cursor(QTextCursor.Right)
@@ -794,25 +799,40 @@ class VimKeys(object):
 
     def P(self, repeat):
         """Paste line above current line, paste characters before cursor."""
-        editor = self._widget.editor()
-        cursor = editor.textCursor()
         text = QApplication.clipboard().text()
         lines = text.splitlines()
-        if self._widget.selection_type[1] == 'line':
-            text *= repeat
-            startBlockPosition = cursor.block().position()
-            cursor.movePosition(QTextCursor.StartOfLine)
-            cursor.insertText(text)
-            cursor.setPosition(startBlockPosition)
-            if lines[0].strip():
-                cursor.movePosition(QTextCursor.NextWord)
-            cursor.movePosition(QTextCursor.StartOfLine)
-            editor.setTextCursor(cursor)
-        elif self._widget.selection_type[1] == 'char':
+        selection_state = self._widget.selection_type[1]
+        mode_state = self.visual_mode
+        if mode_state:
+            self.d(1)
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        if selection_state == 'line':
+            if not mode_state:
+                text *= repeat
+                startBlockPosition = cursor.block().position()
+                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.insertText(text)
+                cursor.setPosition(startBlockPosition)
+                if lines[0].strip():
+                    cursor.movePosition(QTextCursor.NextWord)
+                cursor.movePosition(QTextCursor.StartOfLine)
+                editor.setTextCursor(cursor)
+            elif mode_state == 'char':
+                text *= repeat
+                text = '\n' + text
+                cursor.insertText(text)
+            elif mode_state == 'line':
+                text *= repeat
+                cursor.insertText(text)
+
+        elif selection_state == 'char':
+            if mode_state == 'line':
+                text = text + '\n'
             startPosition = cursor.position()
             for i in range(repeat):
-                editor.paste()
-            if len(lines) > 1:
+                cursor.insertText(text)
+            if len(lines) > 1 or mode_state == 'line':
                 cursor.setPosition(startPosition)
                 editor.setTextCursor(cursor)
             self.h()
