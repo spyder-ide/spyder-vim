@@ -500,6 +500,39 @@ class VimKeys(object):
             text = editor.toPlainText()
             position = cursor.position()
             # Find the starting position
+            start_position = -1
+            if leftover == "(":
+                leftover = ")"
+            elif leftover == "[":
+                leftover = "]"
+            elif leftover == "{":
+                leftover = "}"
+            elif leftover == "<":
+                leftover = ">"
+            stack = []
+            stack.append(leftover)
+            for i, j in enumerate(reversed(text[0:position])):
+                if j == "(" and stack[-1] == ")":
+                    stack.pop()
+                elif j == "[" and stack[-1] == "]":
+                    stack.pop()
+                elif j == "{" and stack[-1] == "}":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == "<" and stack[-1] == ">":
+                    stack.pop()
+                elif j in list(")]}>\"\'"):
+                    stack.append(j)
+                if not stack:
+                     start_position = len(text[0:position]) - i
+                     break
+            if start_position == -1:
+                return
+
+            # Find the matching character
             if leftover == ")":
                 leftover = "("
             elif leftover == "]":
@@ -508,14 +541,6 @@ class VimKeys(object):
                 leftover = "{"
             elif leftover == ">":
                 leftover = "<"
-            start_position = -1
-            for i in reversed(range(position)):
-                if text[i] == leftover:
-                    start_position = i + 1
-                    break
-            if start_position == -1:
-                return
-            # Find the matching character
             stack = []
             stack.append(leftover)
             end_position = -1
@@ -532,7 +557,7 @@ class VimKeys(object):
                     stack.pop()
                 elif j == ">" and stack[-1] == "<":
                     stack.pop()
-                elif j in list("([{\"\'"):
+                elif j in list("([{<\"\'"):
                     stack.append(j)
                 if not stack:
                      end_position = i + start_position - 1
@@ -565,6 +590,39 @@ class VimKeys(object):
             text = editor.toPlainText()
             position = cursor.position()
             # Find the starting position
+            start_position = -1
+            if leftover == "(":
+                leftover = ")"
+            elif leftover == "[":
+                leftover = "]"
+            elif leftover == "{":
+                leftover = "}"
+            elif leftover == "<":
+                leftover = ">"
+            stack = []
+            stack.append(leftover)
+            for i, j in enumerate(reversed(text[0:position])):
+                if j == "(" and stack[-1] == ")":
+                    stack.pop()
+                elif j == "[" and stack[-1] == "]":
+                    stack.pop()
+                elif j == "{" and stack[-1] == "}":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == "<" and stack[-1] == ">":
+                    stack.pop()
+                elif j in list(")]}>\"\'"):
+                    stack.append(j)
+                if not stack:
+                     start_position = len(text[0:position]) - i
+                     break
+            if start_position == -1:
+                return
+
+            # Find the matching character
             if leftover == ")":
                 leftover = "("
             elif leftover == "]":
@@ -573,14 +631,6 @@ class VimKeys(object):
                 leftover = "{"
             elif leftover == ">":
                 leftover = "<"
-            start_position = -1
-            for i in reversed(range(position)):
-                if text[i] == leftover:
-                    start_position = i + 1
-                    break
-            if start_position == -1:
-                return
-            # Find the matching character
             stack = []
             stack.append(leftover)
             end_position = -1
@@ -597,7 +647,7 @@ class VimKeys(object):
                     stack.pop()
                 elif j == ">" and stack[-1] == "<":
                     stack.pop()
-                elif j in list("([{\"\'"):
+                elif j in list("([{<\"\'"):
                     stack.append(j)
                 if not stack:
                      end_position = i + start_position - 1

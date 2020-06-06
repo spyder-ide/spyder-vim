@@ -229,6 +229,34 @@ def test_backward_search_regex_command(vim_bot):
     assert index_test == [4, 3, 2, 1, 4, 1, 2, 3, 4, 1]
 
 
+def test_select_command_brackets(vim_bot):
+    """Test a selection"""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'o')
+    qtbot.keyClicks(editor, '(aa(bbb[test]bbb)aa)')
+    qtbot.keyClicks(cmd_line, '$h')
+    qtbot.keyClicks(cmd_line, 'va(y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '(aa(bbb[test]bbb)aa)'
+
+
+def test_select_command_brackets(vim_bot):
+    """Test a selection"""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'o')
+    qtbot.keyClicks(editor, '(aa(bbb[test]bbb)aa)')
+    qtbot.keyClicks(cmd_line, '$h')
+    qtbot.keyClicks(cmd_line, 'vi(y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == 'aa(bbb[test]bbb)aa'
+
+
 def test_a_command_open_bracket(vim_bot):
     """Test a selection"""
     main, editor_stack, editor, vim, qtbot = vim_bot
