@@ -1090,6 +1090,14 @@ def test_a_command(vim_bot):
     new_line, new_col = editor.get_cursor_line_column()
     assert new_col == col + 1
 
+    # At BlockEnd
+    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    line, col = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'a')
+    new_line, new_col = editor.get_cursor_line_column()
+    assert new_col == col
+
 
 def test_uppercase_a_command(vim_bot):
     """Append text at the end of the line."""

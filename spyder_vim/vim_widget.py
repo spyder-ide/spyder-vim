@@ -587,7 +587,7 @@ class VimKeys(QObject):
     def a(self, leftover=None, repeat=1):
         """Append text after the cursor."""
         if not leftover:
-            self.l()
+            self._move_cursor(QTextCursor.Right)
             self._widget.editor().setFocus()
         elif leftover in list("\"\'([{<>}])"):
             editor = self._widget.editor()
