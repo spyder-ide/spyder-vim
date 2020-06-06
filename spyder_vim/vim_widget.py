@@ -15,7 +15,9 @@ from time import time
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy, QApplication)
 from qtpy.QtGui import QTextCursor, QTextDocument
-from qtpy.QtCore import Qt, QRegularExpression
+from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal
+
+from spyder.config.gui import get_color_scheme, is_dark_interface
 
 
 VIM_COMMAND_PREFIX = ":!/?"
@@ -47,11 +49,13 @@ SYMBOLS_REPLACEMENT = {
 
 
 # %% Vim shortcuts
-class VimKeys(object):
+class VimKeys(QObject):
     """Wrap Vim command actions."""
 
+    mode_changed = Signal(str)
     def __init__(self, widget):
         """Main commands constructor."""
+        QObject.__init__(self)
         self._widget = widget
         self._prev_cursor = None
         self.visual_mode = False
@@ -156,6 +160,7 @@ class VimKeys(object):
 
     def exit_visual_mode(self):
         """Exit visual mode."""
+        self.mode_changed.emit("normal")
         editor = self._widget.editor()
         editor.clear_extra_selections('vim_visual')
         self._widget.update_vim_cursor()
@@ -851,6 +856,7 @@ class VimKeys(object):
     # %% Visual mode
     def v(self, repeat):
         """Start Visual mode per character."""
+        self.mode_changed.emit("visual")
         self.visual_mode = 'char'
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -866,6 +872,7 @@ class VimKeys(object):
 
     def V(self, repeat):
         """Start Visual mode per line."""
+        self.mode_changed.emit("vline")
         self.visual_mode = 'line'
         editor = self._widget.editor()
         cursor = editor.textCursor()
@@ -982,8 +989,8 @@ class VimLineEdit(QLineEdit):
     def focusInEvent(self, event):
         """Enter command mode."""
         QLineEdit.focusInEvent(self, event)
-        self.parent().vim_keys.h()
         self.clear()
+        self.parent().on_mode_changed("normal")
 
     def focusOutEvent(self, event):
         """Enter editor mode."""
@@ -1009,7 +1016,11 @@ class VimWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Vim:"))
+        self.status_label = QLabel("INSERT")
+        self.status_label.setFixedWidth(60)
+        self.status_label.setAlignment(Qt.AlignCenter)
+        self.on_mode_changed("insert")
+        hlayout.addWidget(self.status_label)
         hlayout.addWidget(self.commandline)
         hlayout.setContentsMargins(5, 0, 0, 5)
         self.setLayout(hlayout)
@@ -1019,6 +1030,37 @@ class VimWidget(QWidget):
         # Initialize available commands
         self.vim_keys = VimKeys(self)
         self.vim_commands = VimCommands(self)
+        self.vim_keys.mode_changed.connect(self.on_mode_changed)
+
+    def on_mode_changed(self, mode):
+        if not is_dark_interface():
+            self.status_label.setStyleSheet("QLabel { color: black, padding:2px }")
+            if mode == "visual":
+                self.status_label.setText("VISUAL")
+                self.setStyleSheet("QLabel { background-color: #ffcc99 }")
+            elif mode == "normal":
+                self.status_label.setText("NORMAL")
+                self.setStyleSheet("QLabel { background-color: #85e085 }")
+            elif mode == "vline":
+                self.status_label.setText("V-LINE")
+                self.setStyleSheet("QLabel { background-color: #ffcc99 }")
+            elif mode == "insert":
+                self.status_label.setText("INSERT")
+                self.setStyleSheet("QLabel { background-color: #b3c6ff }")
+        else:
+            self.status_label.setStyleSheet("QLabel { color: white, padding:2px }")
+            if mode == "visual":
+                self.status_label.setText("VISUAL")
+                self.setStyleSheet("QLabel { background-color: #ff8000 }")
+            elif mode == "normal":
+                self.status_label.setText("NORMAL")
+                self.setStyleSheet("QLabel { background-color: #29a329 }")
+            elif mode == "vline":
+                self.status_label.setText("V-LINE")
+                self.setStyleSheet("QLabel { background-color: #ff8000 }")
+            elif mode == "insert":
+                self.status_label.setText("INSERT")
+                self.setStyleSheet("QLabel { background-color: #3366ff }")
 
     def on_text_changed(self, text):
         """Parse input command."""
@@ -1032,8 +1074,10 @@ class VimWidget(QWidget):
             repeat, key, leftover = -1, "G", text[1:]
         elif text == "i" and not self.vim_keys.visual_mode:
             repeat, key, leftover = -1, "i", ""
+            self.on_mode_changed("insert")
         elif text == "a" and not self.vim_keys.visual_mode:
             repeat, key, leftover = -1, "a", ""
+            self.on_mode_changed("insert")
         else:
             if self.vim_keys.visual_mode and text[0] not in VIM_ARG_PREFIX:
                 match = RE_VIM_VISUAL_PREFIX.match(text)
@@ -1084,8 +1128,12 @@ class VimWidget(QWidget):
     def update_vim_cursor(self):
         """Update Vim cursor position."""
         selection = QTextEdit.ExtraSelection()
-        back = Qt.white  # selection.format.background().color()
-        fore = Qt.black  # selection.format.foreground().color()
+        if not is_dark_interface():
+            back = Qt.white  # selection.format.background().color()
+            fore = Qt.black  # selection.format.foreground().color()
+        else:
+            back = Qt.black  # selection.format.background().color()
+            fore = Qt.white  # selection.format.foreground().color()
         selection.format.setBackground(fore)
         selection.format.setForeground(back)
         selection.cursor = self.editor().textCursor()
