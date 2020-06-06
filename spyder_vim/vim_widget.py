@@ -252,6 +252,9 @@ class VimKeys(object):
                     self._move_selection(cur_block.next().position())
             else:
                 self._move_selection(cur_block.position(), move_start=True)
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
 
     def k(self, repeat=1):
         """Move the cursor up."""
@@ -272,6 +275,9 @@ class VimKeys(object):
                 self._move_selection(cur_block.position(), move_start=True)
             else:
                 self._move_selection(cur_block.next().position())
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
 
     def l(self, repeat=1):  # analysis:ignore
         """Move cursor to the right."""
