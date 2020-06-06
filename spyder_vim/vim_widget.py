@@ -1128,8 +1128,12 @@ class VimWidget(QWidget):
     def update_vim_cursor(self):
         """Update Vim cursor position."""
         selection = QTextEdit.ExtraSelection()
-        back = Qt.white  # selection.format.background().color()
-        fore = Qt.black  # selection.format.foreground().color()
+        if not is_dark_interface():
+            back = Qt.white  # selection.format.background().color()
+            fore = Qt.black  # selection.format.foreground().color()
+        else:
+            back = Qt.black  # selection.format.background().color()
+            fore = Qt.white  # selection.format.foreground().color()
         selection.format.setBackground(fore)
         selection.format.setForeground(back)
         selection.cursor = self.editor().textCursor()
