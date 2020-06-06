@@ -257,6 +257,9 @@ class VimKeys(QObject):
                     self._move_selection(cur_block.next().position())
             else:
                 self._move_selection(cur_block.position(), move_start=True)
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
 
     def k(self, repeat=1):
         """Move the cursor up."""
@@ -277,6 +280,9 @@ class VimKeys(QObject):
                 self._move_selection(cur_block.position(), move_start=True)
             else:
                 self._move_selection(cur_block.next().position())
+        else:
+            if cursor.atBlockEnd():
+                self._move_cursor(QTextCursor.Left)
 
     def l(self, repeat=1):  # analysis:ignore
         """Move cursor to the right."""
@@ -499,6 +505,39 @@ class VimKeys(QObject):
             text = editor.toPlainText()
             position = cursor.position()
             # Find the starting position
+            start_position = -1
+            if leftover == "(":
+                leftover = ")"
+            elif leftover == "[":
+                leftover = "]"
+            elif leftover == "{":
+                leftover = "}"
+            elif leftover == "<":
+                leftover = ">"
+            stack = []
+            stack.append(leftover)
+            for i, j in enumerate(reversed(text[0:position])):
+                if j == "(" and stack[-1] == ")":
+                    stack.pop()
+                elif j == "[" and stack[-1] == "]":
+                    stack.pop()
+                elif j == "{" and stack[-1] == "}":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == "<" and stack[-1] == ">":
+                    stack.pop()
+                elif j in list(")]}>\"\'"):
+                    stack.append(j)
+                if not stack:
+                     start_position = len(text[0:position]) - i
+                     break
+            if start_position == -1:
+                return
+
+            # Find the matching character
             if leftover == ")":
                 leftover = "("
             elif leftover == "]":
@@ -507,14 +546,6 @@ class VimKeys(QObject):
                 leftover = "{"
             elif leftover == ">":
                 leftover = "<"
-            start_position = -1
-            for i in reversed(range(position)):
-                if text[i] == leftover:
-                    start_position = i + 1
-                    break
-            if start_position == -1:
-                return
-            # Find the matching character
             stack = []
             stack.append(leftover)
             end_position = -1
@@ -531,7 +562,7 @@ class VimKeys(QObject):
                     stack.pop()
                 elif j == ">" and stack[-1] == "<":
                     stack.pop()
-                elif j in list("([{\"\'"):
+                elif j in list("([{<\"\'"):
                     stack.append(j)
                 if not stack:
                      end_position = i + start_position - 1
@@ -564,6 +595,39 @@ class VimKeys(QObject):
             text = editor.toPlainText()
             position = cursor.position()
             # Find the starting position
+            start_position = -1
+            if leftover == "(":
+                leftover = ")"
+            elif leftover == "[":
+                leftover = "]"
+            elif leftover == "{":
+                leftover = "}"
+            elif leftover == "<":
+                leftover = ">"
+            stack = []
+            stack.append(leftover)
+            for i, j in enumerate(reversed(text[0:position])):
+                if j == "(" and stack[-1] == ")":
+                    stack.pop()
+                elif j == "[" and stack[-1] == "]":
+                    stack.pop()
+                elif j == "{" and stack[-1] == "}":
+                    stack.pop()
+                elif j == "\"" and stack[-1] == "\"":
+                    stack.pop()
+                elif j == "\'" and stack[-1] == "\'":
+                    stack.pop()
+                elif j == "<" and stack[-1] == ">":
+                    stack.pop()
+                elif j in list(")]}>\"\'"):
+                    stack.append(j)
+                if not stack:
+                     start_position = len(text[0:position]) - i
+                     break
+            if start_position == -1:
+                return
+
+            # Find the matching character
             if leftover == ")":
                 leftover = "("
             elif leftover == "]":
@@ -572,14 +636,6 @@ class VimKeys(QObject):
                 leftover = "{"
             elif leftover == ">":
                 leftover = "<"
-            start_position = -1
-            for i in reversed(range(position)):
-                if text[i] == leftover:
-                    start_position = i + 1
-                    break
-            if start_position == -1:
-                return
-            # Find the matching character
             stack = []
             stack.append(leftover)
             end_position = -1
@@ -596,7 +652,7 @@ class VimKeys(QObject):
                     stack.pop()
                 elif j == ">" and stack[-1] == "<":
                     stack.pop()
-                elif j in list("([{\"\'"):
+                elif j in list("([{<\"\'"):
                     stack.append(j)
                 if not stack:
                      end_position = i + start_position - 1
