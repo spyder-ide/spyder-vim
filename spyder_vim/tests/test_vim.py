@@ -229,6 +229,27 @@ def test_backward_search_regex_command(vim_bot):
     assert index_test == [4, 3, 2, 1, 4, 1, 2, 3, 4, 1]
 
 
+def test_cursor_position(vim_bot):
+    """Test cursor position"""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '$a')
+    qtbot.keyClicks(editor, 'test')
+    editor.stdkey_escape()
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2test\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+    _, col = editor.get_cursor_line_column()
+    assert col == 10
+
+
 def test_select_command_brackets(vim_bot):
     """Test a selection"""
     main, editor_stack, editor, vim, qtbot = vim_bot

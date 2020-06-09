@@ -149,9 +149,10 @@ class VimKeys(QObject):
             print("ERROR: editor_cursor must be an instance of QTextCursor")
         else:
             cursor.movePosition(QTextCursor.StartOfLine)
-            cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
+            cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
                                 n=lines)
             line = cursor.selectedText().replace('\u2029', '\n')
+            line += '\n'
             return line
 
     def _update_selection_type(self, selection_type):
@@ -165,6 +166,16 @@ class VimKeys(QObject):
         editor.clear_extra_selections('vim_visual')
         self._widget.update_vim_cursor()
         self.visual_mode = False
+
+    def exit_insert_mode(self):
+        """Exit insert mode."""
+        self.mode_changed.emit("normal")
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        editor.clear_extra_selections('vim_visual')
+        if cursor.atBlockEnd():
+           self.h()
+        self._widget.update_vim_cursor()
 
     def search(self, key, reverse=False):
         """"Search regular expressions key inside document"""
@@ -258,7 +269,8 @@ class VimKeys(QObject):
             else:
                 self._move_selection(cur_block.position(), move_start=True)
         else:
-            if cursor.atBlockEnd():
+            line = self._get_line(cursor)
+            if line != '\n' and cursor.atBlockEnd():
                 self._move_cursor(QTextCursor.Left)
 
     def k(self, repeat=1):
@@ -281,7 +293,8 @@ class VimKeys(QObject):
             else:
                 self._move_selection(cur_block.next().position())
         else:
-            if cursor.atBlockEnd():
+            line = self._get_line(cursor)
+            if line != '\n' and cursor.atBlockEnd():
                 self._move_cursor(QTextCursor.Left)
 
     def l(self, repeat=1):  # analysis:ignore
@@ -587,7 +600,10 @@ class VimKeys(QObject):
     def a(self, leftover=None, repeat=1):
         """Append text after the cursor."""
         if not leftover:
-            self._move_cursor(QTextCursor.Right)
+            cursor = self._editor_cursor()
+            line = self._get_line(cursor)
+            if line != '\n':
+                self._move_cursor(QTextCursor.Right)
             self._widget.editor().setFocus()
         elif leftover in list("\"\'([{<>}])"):
             editor = self._widget.editor()
@@ -679,6 +695,7 @@ class VimKeys(QObject):
         cursor.insertText("\n")
         editor.setTextCursor(cursor)
         editor.setFocus()
+        self._widget.update_vim_cursor()
 
     def O(self, repeat):
         """Begin a new line above the cursor and insert text."""
@@ -689,6 +706,7 @@ class VimKeys(QObject):
         cursor.movePosition(QTextCursor.Up)
         editor.setTextCursor(cursor)
         editor.setFocus()
+        self._widget.update_vim_cursor()
 
     # %% Editing and cases(visual)
     def u(self, repeat):
@@ -1047,6 +1065,7 @@ class VimLineEdit(QLineEdit):
         QLineEdit.focusInEvent(self, event)
         self.clear()
         self.parent().on_mode_changed("normal")
+        self.parent().vim_keys.exit_insert_mode()
 
     def focusOutEvent(self, event):
         """Enter editor mode."""
