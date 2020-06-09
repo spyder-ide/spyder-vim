@@ -167,6 +167,16 @@ class VimKeys(QObject):
         self._widget.update_vim_cursor()
         self.visual_mode = False
 
+    def exit_insert_mode(self):
+        """Exit insert mode."""
+        self.mode_changed.emit("normal")
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        editor.clear_extra_selections('vim_visual')
+        if cursor.atBlockEnd():
+           self.h()
+        self._widget.update_vim_cursor()
+
     def search(self, key, reverse=False):
         """"Search regular expressions key inside document"""
         editor = self._widget.editor()
@@ -685,6 +695,7 @@ class VimKeys(QObject):
         cursor.insertText("\n")
         editor.setTextCursor(cursor)
         editor.setFocus()
+        self._widget.update_vim_cursor()
 
     def O(self, repeat):
         """Begin a new line above the cursor and insert text."""
@@ -695,6 +706,7 @@ class VimKeys(QObject):
         cursor.movePosition(QTextCursor.Up)
         editor.setTextCursor(cursor)
         editor.setFocus()
+        self._widget.update_vim_cursor()
 
     # %% Editing and cases(visual)
     def u(self, repeat):
@@ -1053,6 +1065,7 @@ class VimLineEdit(QLineEdit):
         QLineEdit.focusInEvent(self, event)
         self.clear()
         self.parent().on_mode_changed("normal")
+        self.parent().vim_keys.exit_insert_mode()
 
     def focusOutEvent(self, event):
         """Enter editor mode."""
