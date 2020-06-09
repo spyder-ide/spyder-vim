@@ -149,9 +149,10 @@ class VimKeys(QObject):
             print("ERROR: editor_cursor must be an instance of QTextCursor")
         else:
             cursor.movePosition(QTextCursor.StartOfLine)
-            cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
+            cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor,
                                 n=lines)
             line = cursor.selectedText().replace('\u2029', '\n')
+            line += '\n'
             return line
 
     def _update_selection_type(self, selection_type):
