@@ -259,7 +259,8 @@ class VimKeys(QObject):
             else:
                 self._move_selection(cur_block.position(), move_start=True)
         else:
-            if cursor.atBlockEnd():
+            line = self._get_line(cursor)
+            if line != '\n' and cursor.atBlockEnd():
                 self._move_cursor(QTextCursor.Left)
 
     def k(self, repeat=1):
@@ -282,7 +283,8 @@ class VimKeys(QObject):
             else:
                 self._move_selection(cur_block.next().position())
         else:
-            if cursor.atBlockEnd():
+            line = self._get_line(cursor)
+            if line != '\n' and cursor.atBlockEnd():
                 self._move_cursor(QTextCursor.Left)
 
     def l(self, repeat=1):  # analysis:ignore
@@ -588,7 +590,10 @@ class VimKeys(QObject):
     def a(self, leftover=None, repeat=1):
         """Append text after the cursor."""
         if not leftover:
-            self._move_cursor(QTextCursor.Right)
+            cursor = self._editor_cursor()
+            line = self._get_line(cursor)
+            if line != '\n':
+                self._move_cursor(QTextCursor.Right)
             self._widget.editor().setFocus()
         elif leftover in list("\"\'([{<>}])"):
             editor = self._widget.editor()
