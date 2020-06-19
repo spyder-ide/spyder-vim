@@ -90,6 +90,7 @@ def editor_bot(qtbot):
     editor_stack.set_find_widget(Mock())
     editor_stack.set_io_actions(Mock(), Mock(), Mock(), Mock())
     finfo = editor_stack.new(osp.join(LOCATION, 'foo.txt'), 'utf-8', text)
+    editor_stack.new(osp.join(LOCATION, 'foo1.txt'), 'utf-8', text)
     main = MainMock(editor_stack)
     # main.show()
     qtbot.addWidget(main)
@@ -1678,3 +1679,18 @@ def test_gg_command_char_mode(vim_bot):
     # editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
     # new_line, new_col = editor.get_cursor_line_column()
     assert clipboard == '   123\nline 1\nlin'
+
+
+def test_gt_command(vim_bot):
+    """Cycle to previous/next file."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+
+    assert 0 == editor_stack.get_stack_index()
+
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'gt')
+    assert 1 == editor_stack.get_stack_index()
+
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'gT')
+    assert 0 == editor_stack.get_stack_index()

@@ -964,6 +964,23 @@ class VimKeys(QObject):
         editor.update_extra_selections()
 
     # TODO: CTRL + V sets visual mode to 'block'
+    def gt(self, repeat):
+        """Cycle to next file."""
+        editorstack = self._widget.editor_widget.get_current_editorstack()
+        if repeat == -1:
+            editorstack.tabs.tab_navigate(1)
+        else:  # {i}gt: go to tab in position i
+            idx = repeat - 1
+            if editorstack.get_stack_count() > idx:
+                editorstack.set_stack_index(idx)
+        self._widget.commandline.setFocus()
+
+    def gT(self, repeat):
+        """Cycle to previous file."""
+        editorstack = self._widget.editor_widget.get_current_editorstack()
+        for _ in range(repeat):
+            editorstack.tabs.tab_navigate(-1)
+        self._widget.commandline.setFocus()
 
 
 # %% Vim commands
@@ -1153,6 +1170,8 @@ class VimWidget(QWidget):
         elif text == "a" and not self.vim_keys.visual_mode:
             repeat, key, leftover = -1, "a", ""
             self.on_mode_changed("insert")
+        elif text == "gt":
+            repeat, key, leftover = -1, "gt", ""
         else:
             if self.vim_keys.visual_mode and text[0] not in VIM_ARG_PREFIX:
                 match = RE_VIM_VISUAL_PREFIX.match(text)
