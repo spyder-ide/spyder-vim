@@ -964,6 +964,19 @@ class VimKeys(QObject):
         editor.update_extra_selections()
 
     # TODO: CTRL + V sets visual mode to 'block'
+    def gt(self, repeat):
+        """Cycle to next file."""
+        editorstack = self._widget.editor_widget.get_current_editorstack()
+        for _ in range(repeat):
+            editorstack.tabs.tab_navigate(1)
+        self._widget.commandline.setFocus()
+
+    def gT(self, repeat):
+        """Cycle to previous file."""
+        editorstack = self._widget.editor_widget.get_current_editorstack()
+        for _ in range(repeat):
+            editorstack.tabs.tab_navigate(-1)
+        self._widget.commandline.setFocus()
 
 
 # %% Vim commands
