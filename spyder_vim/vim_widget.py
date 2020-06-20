@@ -1087,7 +1087,8 @@ class VimLineEdit(QLineEdit):
     def focusOutEvent(self, event):
         """Enter editor mode."""
         QLineEdit.focusOutEvent(self, event)
-        self.parent().editor().clear_extra_selections('vim_cursor')
+        self.parent().editor().set_extra_selections('vim_cursor', [QTextEdit.ExtraSelection()])
+        self.parent().editor().update_extra_selections()
         if self.parent().vim_keys.visual_mode:
             self.parent().vim_keys.exit_visual_mode()
 
