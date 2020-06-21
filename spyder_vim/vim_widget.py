@@ -531,7 +531,6 @@ class VimKeys(QObject):
         editor = self._widget.editor()
         position = editor.cursorForPosition(QPoint(0, int((editor.viewport().height())*0.5))).position()
         self._set_cursor(position, mode=QTextCursor.MoveAnchor)
-        self.k()
 
     # %% Insertion
     def i(self, leftover=None, repeat=1):
