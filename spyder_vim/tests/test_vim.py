@@ -633,7 +633,7 @@ def test_L_command(vim_bot):
 
 
 def test_M_command(vim_bot):
-    """Test L command (Cursor moves to the middle of the screen)."""
+    """Test M command (Cursor moves to the middle of the screen)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -643,9 +643,22 @@ def test_M_command(vim_bot):
     position = editor.textCursor().position()
     first_position = editor.cursorForPosition(QPoint(0, int(editor.viewport().height()*0.5))).position()
     assert first_position == position
-    qtbot.keyClicks(cmd_line, 'zz')
-    position = editor.textCursor().position()
-    assert first_position == position
+
+
+def test_zz_command(vim_bot):
+    """Test zz command (Center the current line)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.resize(400, 800)
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'ggVGy')
+    qtbot.keyClicks(cmd_line, '100p')
+    qtbot.keyClicks(cmd_line, ':100\rM')
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'gg99j')
+    qtbot.keyClicks(cmd_line, 'zzM')
+    new_line, _ = editor.get_cursor_line_column()
+    assert new_line == line
 
 
 def test_j_command(vim_bot):
@@ -1533,7 +1546,7 @@ def test_p_command_line_mode_line_selection(vim_bot):
     assert text == expected_text
 
 
-def test_zz_command(vim_bot):
+def test_ZZ_command(vim_bot):
     """Save and close file."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
