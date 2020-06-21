@@ -514,6 +514,12 @@ class VimKeys(QObject):
         editor.go_to_line(line + 1)
         self._widget.update_vim_cursor()
 
+    def H(self, repeat=1):
+        """Move cursor to the top of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, 0)).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+
     # %% Insertion
     def i(self, leftover=None, repeat=1):
         """Insert text before the cursor."""

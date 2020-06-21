@@ -18,7 +18,7 @@ except ImportError:
     from mock import Mock  # Python 2
 
 # Qt imports
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QPoint
 from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
@@ -604,6 +604,19 @@ def test_h_command(vim_bot):
     qtbot.keyClicks(cmd_line, 'h')
     _, new_col = editor.get_cursor_line_column()
     assert new_col == col - 1
+
+
+def test_H_command(vim_bot):
+    """Test h command (Cursor moves to the left)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'VGy')
+    qtbot.keyClicks(cmd_line, '10pG')
+    qtbot.keyClicks(cmd_line, 'H')
+    position = editor.textCursor().position()
+    first_position = editor.cursorForPosition(QPoint(0,0)).position()
+    assert first_position == position
 
 
 def test_j_command(vim_bot):
