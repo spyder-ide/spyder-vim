@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehHjklnNpPGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -518,6 +518,12 @@ class VimKeys(QObject):
         """Move cursor to the top of the page"""
         editor = self._widget.editor()
         position = editor.cursorForPosition(QPoint(0, 0)).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+
+    def L(self, repeat=1):
+        """Move cursor to the bottom of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, editor.viewport().height())).position()
         self._set_cursor(position, mode=QTextCursor.MoveAnchor)
 
     # %% Insertion

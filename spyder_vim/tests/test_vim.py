@@ -619,6 +619,19 @@ def test_H_command(vim_bot):
     assert first_position == position
 
 
+def test_L_command(vim_bot):
+    """Test h command (Cursor moves to the left)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'VGy')
+    qtbot.keyClicks(cmd_line, '10pg')
+    qtbot.keyClicks(cmd_line, 'L')
+    position = editor.textCursor().position()
+    first_position = editor.cursorForPosition(QPoint(0, editor.viewport().height())).position()
+    assert first_position == position
+
+
 def test_j_command(vim_bot):
     """Test j command (Cursor moves down)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
