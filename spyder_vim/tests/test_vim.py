@@ -607,7 +607,7 @@ def test_h_command(vim_bot):
 
 
 def test_H_command(vim_bot):
-    """Test h command (Cursor moves to the left)."""
+    """Test H command (Cursor moves to the top of the screen)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -620,7 +620,7 @@ def test_H_command(vim_bot):
 
 
 def test_L_command(vim_bot):
-    """Test h command (Cursor moves to the left)."""
+    """Test L command (Cursor moves to the bottom of the screen)."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.stdkey_backspace()
     cmd_line = vim.get_focus_widget()
@@ -629,6 +629,22 @@ def test_L_command(vim_bot):
     qtbot.keyClicks(cmd_line, 'L')
     position = editor.textCursor().position()
     first_position = editor.cursorForPosition(QPoint(0, editor.viewport().height())).position()
+    assert first_position == position
+
+
+def test_M_command(vim_bot):
+    """Test L command (Cursor moves to the middle of the screen)."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'VGy')
+    qtbot.keyClicks(cmd_line, '10pg')
+    qtbot.keyClicks(cmd_line, 'M')
+    position = editor.textCursor().position()
+    first_position = editor.cursorForPosition(QPoint(0, int(editor.viewport().height()*0.5))).position()
+    assert first_position == position
+    qtbot.keyClicks(cmd_line, 'zz')
+    position = editor.textCursor().position()
     assert first_position == position
 
 

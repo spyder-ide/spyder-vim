@@ -526,6 +526,13 @@ class VimKeys(QObject):
         position = editor.cursorForPosition(QPoint(0, editor.viewport().height())).position()
         self._set_cursor(position, mode=QTextCursor.MoveAnchor)
 
+    def M(self, repeat=1):
+        """Move cursor to the middle of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, int((editor.viewport().height())*0.5))).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+        self.k()
+
     # %% Insertion
     def i(self, leftover=None, repeat=1):
         """Insert text before the cursor."""
