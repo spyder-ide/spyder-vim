@@ -15,7 +15,7 @@ from time import time
 from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
                             QSizePolicy, QApplication)
 from qtpy.QtGui import QTextCursor, QTextDocument
-from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal
+from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal, QPoint
 
 from spyder.config.gui import get_color_scheme, is_dark_interface
 
@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehjklnNpPGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF"
 
@@ -506,6 +506,31 @@ class VimKeys(QObject):
                     self._move_selection(cur_block.next().position())
                 else:
                     self._move_selection(cursor.position())
+
+    def zz(self, repeat=1):
+        """Center the current line"""
+        editor = self._widget.editor()
+        line, _ = editor.get_cursor_line_column()
+        editor.go_to_line(line + 1)
+        self._widget.update_vim_cursor()
+
+    def H(self, repeat=1):
+        """Move cursor to the top of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, 0)).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+
+    def L(self, repeat=1):
+        """Move cursor to the bottom of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, editor.viewport().height())).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+
+    def M(self, repeat=1):
+        """Move cursor to the middle of the page"""
+        editor = self._widget.editor()
+        position = editor.cursorForPosition(QPoint(0, int((editor.viewport().height())*0.5))).position()
+        self._set_cursor(position, mode=QTextCursor.MoveAnchor)
 
     # %% Insertion
     def i(self, leftover=None, repeat=1):
