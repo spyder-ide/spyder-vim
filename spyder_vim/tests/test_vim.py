@@ -1499,6 +1499,160 @@ def test_p_command_line_mode_line_selection(vim_bot):
     assert text == expected_text
 
 
+def test_numbered_register(vim_bot):
+    """Test numbered register."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'dd')
+    qtbot.keyClicks(cmd_line, 'dd')
+    qtbot.keyClicks(cmd_line, 'dd')
+    qtbot.keyClicks(cmd_line, '\"3p')
+    qtbot.keyClicks(cmd_line, '\"2p')
+    text = editor.toPlainText()
+    expected_text = ('line 3\n'
+                     '   123\n'
+                     'line 1\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_numbered_register_line_mode(vim_bot):
+    """Test numbered register line mode."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, '\"3p')
+    qtbot.keyClicks(cmd_line, '\"2p')
+    text = editor.toPlainText()
+    expected_text = ('line 3\n'
+                     '   123\n'
+                     'line 1\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_small_register(vim_bot):
+    """Test small delete register."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, 'Vd')
+    qtbot.keyClicks(cmd_line, 'v2ldP')
+    qtbot.keyClicks(cmd_line, '\"3p')
+    qtbot.keyClicks(cmd_line, '\"2p')
+    text = editor.toPlainText()
+    expected_text = ('line 3\n'
+                     '   123\n'
+                     'line 1\n'
+                     'line 4')
+    assert text == expected_text
+    qtbot.keyClicks(cmd_line, '\"-p')
+    text = editor.toPlainText()
+    expected_text = ('line 3\n'
+                     '   123\n'
+                     'llinine 1\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_append_to_registers(vim_bot):
+    """Test append to registers."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2l\"ay')
+    qtbot.keyClicks(cmd_line, 'vj\"Ay')
+    qtbot.keyClicks(cmd_line, '\"ap')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'llinline 1\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_normal_registers_yy(vim_bot):
+    """Test normal registers yy yank."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '\"ayy')
+    qtbot.keyClicks(cmd_line, 'j')
+    qtbot.keyClicks(cmd_line, '\"byy')
+    qtbot.keyClicks(cmd_line, '2j')
+    qtbot.keyClicks(cmd_line, '\"bp')
+    qtbot.keyClicks(cmd_line, '\"ap')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 1\n'
+                     '   123\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_normal_registers_char_mode(vim_bot):
+    """Test normal registers char_mode."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'v2l\"ay')
+    qtbot.keyClicks(cmd_line, 'j')
+    qtbot.keyClicks(cmd_line, 'v2l\"by')
+    qtbot.keyClicks(cmd_line, 'j')
+    qtbot.keyClicks(cmd_line, '\"bp')
+    qtbot.keyClicks(cmd_line, '\"ap')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'llinlinine 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_normal_registers_line_mode(vim_bot):
+    """Test normal registers in line mode."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(1)
+    cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, 'V\"ay')
+    qtbot.keyClicks(cmd_line, 'j')
+    qtbot.keyClicks(cmd_line, 'V\"by')
+    qtbot.keyClicks(cmd_line, '2j')
+    qtbot.keyClicks(cmd_line, '\"bp')
+    qtbot.keyClicks(cmd_line, '\"ap')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     'line 2\n'
+                     'line 3\n'
+                     'line 1\n'
+                     '   123\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_uppercase_zz_command(vim_bot):
     """Save and close file."""
     main, editor_stack, editor, vim, qtbot = vim_bot

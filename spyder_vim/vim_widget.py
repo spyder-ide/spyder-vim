@@ -27,7 +27,7 @@ RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
 VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b"
 VIM_VISUAL_PREFIX = "agi"
-VIM_ARG_PREFIX = "fF"
+VIM_ARG_PREFIX = "fF\""
 
 RE_VIM_VISUAL_PREFIX = re.compile(
     RE_VIM_PREFIX_STR.format(prefixes=VIM_VISUAL_PREFIX))
@@ -44,7 +44,8 @@ SYMBOLS_REPLACEMENT = {
     "@": "AT",
     "$": "DOLLAR",
     "0": "ZERO",
-    "^": "CARET"
+    "^": "CARET",
+    "\"": "QUOTE"
 }
 
 
@@ -60,6 +61,11 @@ class VimKeys(QObject):
         self._prev_cursor = None
         self.visual_mode = False
         self.search_dict = {}
+        self.registers = {}
+        for i in range(10):
+            self.registers[str(i)] = ""
+        self.registers["unnamed"] = ("", False)
+        self.register = "unnamed"
 
     def __call__(self, key, repeat):
         """Execute vim command."""
@@ -70,6 +76,9 @@ class VimKeys(QObject):
             leftover = key[1]
             key = key[0]
         elif key[0] in "ia" and self.visual_mode == "char":
+            leftover = key[1]
+            key = key[0]
+        elif key[0] is "\"":
             leftover = key[1]
             key = key[0]
         for symbol, text in SYMBOLS_REPLACEMENT.items():
@@ -83,6 +92,44 @@ class VimKeys(QObject):
                 method(leftover, repeat)
             else:
                 method(repeat=repeat)
+
+    def QUOTE(self, leftover, repeat=1):
+        """Set the register value"""
+        self.register = leftover
+
+    def set_register(self, text, mode, register="unnamed", cut=False):
+        """Set the register value inside the dictionary of registers."""
+        # Delete and small delete registers
+        if cut and (mode == "line" or text.find("\n") != -1):
+            for i in reversed(range(2, 9)):
+                self.registers[str(i)] = self.registers[str(i-1)] 
+            self.registers["1"] = (text, mode) 
+        else:
+            self.registers["0"] = (text, mode)
+            self.registers["-"] = (text, mode) 
+            pass
+        # General register
+        if register in [str(i) for i in range(10)]:
+            pass
+        elif register in [".", "%", "#" ":"]:
+            pass # To implement
+        elif register.islower():
+            self.registers[register] = (text, mode) 
+        elif register.isupper():
+            previous_text, _ = self.get_register(register.lower())
+            self.registers[register.lower()] = (previous_text + text, mode) 
+        self.registers["unamed"] = (text, mode) 
+        self.register = "unnamed"
+
+    def get_register(self, register="unnamed"):
+        """Get the register from the dictionary of registers."""
+        if register in self.registers:
+            text, mode = self.registers[str(register)]
+        else:
+            text = ""
+            mode = False
+        self.register = "unnamed"
+        return text, mode
 
     def _move_cursor(self, movement, repeat=1):
         cursor = self._editor_cursor()
@@ -762,6 +809,9 @@ class VimKeys(QObject):
             self._update_selection_type('line')
         else:
             self._update_selection_type('block')
+        text = cursor.selectedText().replace('\u2029', '\n')
+        self.set_register(text, self._widget.selection_type[1], register=self.register, cut=True)
+        self.register = "unnamed"
         editor.setTextCursor(cursor)
         editor.cut()
         self.exit_visual_mode()
@@ -775,6 +825,8 @@ class VimKeys(QObject):
             cursor.movePosition(QTextCursor.Up)
             cursor.movePosition(QTextCursor.EndOfLine)
             cursor.movePosition(QTextCursor.End, QTextCursor.KeepAnchor, repeat)
+        text = cursor.selectedText()
+        self.set_register(text, "line", register=self.register, cut=True)
         editor.setTextCursor(cursor)
         editor.cut()
         self._update_selection_type("line")
@@ -793,6 +845,9 @@ class VimKeys(QObject):
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
         cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor,
                             repeat - 1)
+        text = cursor.selectedText().replace('\u2029', '\n')
+        self.set_register(text, self._widget.selection_type[1], register=self.register, cut=True)
+        editor.setTextCursor(cursor)
         editor.setTextCursor(cursor)
         editor.cut()
         self._widget.update_vim_cursor()
@@ -803,6 +858,8 @@ class VimKeys(QObject):
         cursor = editor.textCursor()
         cursor.movePosition(move_operation, QTextCursor.KeepAnchor,
                             repeat)
+        text = cursor.selectedText().replace('\u2029', '\n')
+        self.set_register(text, self._widget.selection_type[1], register=self.register, cut=True)
         editor.setTextCursor(cursor)
         editor.cut()
         self._widget.update_vim_cursor()
@@ -826,6 +883,8 @@ class VimKeys(QObject):
         if break_index != -1:
             cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor,
                            len(text)-break_index)
+            text = cursor.selectedText().replace('\u2029', '\n')
+            self.set_register(text, self._widget.selection_type[1], register=self.register, cut=True)
             editor.setTextCursor(cursor)
             editor.cut()
             self._move_cursor(QTextCursor.Left)
@@ -847,6 +906,7 @@ class VimKeys(QObject):
         if self.visual_mode == 'char':
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
         text = cursor.selectedText().replace('\u2029', '\n')
+        self.set_register(text, self.visual_mode, register=self.register)
         QApplication.clipboard().setText(text)
         cursor.setPosition(cursor.selectionStart())
         if self.visual_mode == 'char':
@@ -869,6 +929,7 @@ class VimKeys(QObject):
         text = self._get_line(cursor, lines=repeat)
         QApplication.clipboard().setText(text)
         self._update_selection_type("line")
+        self.set_register(text, self._widget.selection_type[1], register=self.register)
 
     def yw(self, repeat):
         """Copy word."""
@@ -879,6 +940,7 @@ class VimKeys(QObject):
         cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
         text = cursor.selectedText().replace('\u2029', '\n')
         QApplication.clipboard().setText(text)
+        self.set_register(text, self._widget.selection_type[1], register=self.register)
 
     def yDOLLAR(self, repeat):
         """Copy until end of line."""
@@ -888,13 +950,17 @@ class VimKeys(QObject):
                             repeat)
         text = cursor.selectedText().replace('\u2029', '\n')
         QApplication.clipboard().setText(text)
+        self.set_register(text, self._widget.selection_type[1], register=self.register)
 
     def p(self, repeat):
         """Paste line below current line, paste characters after cursor."""
-        if self._widget.selection_type[1] == 'line':
+        register = self.register
+        __, selection_state = self.get_register(register=self.register)
+        self.register = register
+        if selection_state == 'line':
             self._move_cursor(QTextCursor.Down)
             self.P(repeat)
-        elif self._widget.selection_type[1] == 'char':
+        elif selection_state == 'char':
             self._move_cursor(QTextCursor.Right)
             self.P(repeat)
         else:
@@ -903,9 +969,8 @@ class VimKeys(QObject):
 
     def P(self, repeat):
         """Paste line above current line, paste characters before cursor."""
-        text = QApplication.clipboard().text()
+        text, selection_state = self.get_register(register=self.register)
         lines = text.splitlines()
-        selection_state = self._widget.selection_type[1]
         mode_state = self.visual_mode
         if mode_state:
             self.d(1)
