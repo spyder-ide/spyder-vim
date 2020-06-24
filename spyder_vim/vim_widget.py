@@ -1179,6 +1179,7 @@ class VimLineEdit(QLineEdit):
         QLineEdit.focusOutEvent(self, event)
         self.parent().editor().set_extra_selections('vim_cursor', [QTextEdit.ExtraSelection()])
         self.parent().editor().update_extra_selections()
+        self.parent().on_mode_changed("insert")
         if self.parent().vim_keys.visual_mode:
             self.parent().vim_keys.exit_visual_mode()
 
@@ -1257,10 +1258,8 @@ class VimWidget(QWidget):
             repeat, key, leftover = -1, "G", text[1:]
         elif text == "i" and not self.vim_keys.visual_mode:
             repeat, key, leftover = -1, "i", ""
-            self.on_mode_changed("insert")
         elif text == "a" and not self.vim_keys.visual_mode:
             repeat, key, leftover = -1, "a", ""
-            self.on_mode_changed("insert")
         elif text == "gt":
             repeat, key, leftover = -1, "gt", ""
         else:
