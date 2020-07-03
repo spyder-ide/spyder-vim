@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b"
+VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b%"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF\""
 
@@ -45,7 +45,8 @@ SYMBOLS_REPLACEMENT = {
     "$": "DOLLAR",
     "0": "ZERO",
     "^": "CARET",
-    "\"": "QUOTE"
+    "\"": "QUOTE",
+    "%": "PERCENT",
 }
 
 
@@ -578,6 +579,70 @@ class VimKeys(QObject):
         editor = self._widget.editor()
         position = editor.cursorForPosition(QPoint(0, int((editor.viewport().height())*0.5))).position()
         self._set_cursor(position, mode=QTextCursor.MoveAnchor)
+
+    def PERCENT(self, repeat=1):
+        """Go to matching bracket"""
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        text = editor.toPlainText()
+        position = cursor.position()
+        # Find starting position      
+        start_position = -1
+        for i, j in enumerate(text[position::]):
+            if j in list("([{"):
+                start_char = j
+                start_position = i + position + 1
+                sub_text = text[start_position::]
+                break
+            elif j in list(")]}"):
+                start_char = j
+                start_position = i + position
+                sub_text = reversed(text[0:start_position])
+                break
+        if start_position == -1:
+            return
+        # Find final position      
+        end_position = -1
+        stack = [start_char]
+        for i, j in enumerate(sub_text):
+            if j == "(" and stack[-1] == ")":
+                stack.pop()
+            elif j == "[" and stack[-1] == "]":
+                stack.pop()
+            elif j == "{" and stack[-1] == "}":
+                stack.pop()
+            elif j == ")" and stack[-1] == "(":
+                stack.pop()
+            elif j == "]" and stack[-1] == "[":
+                stack.pop()
+            elif j == "}" and stack[-1] == "{":
+                stack.pop()
+            elif j in list("([{)]}"):
+                stack.append(j)
+            if not stack and start_char in list("([{"):
+                end_position = start_position + i 
+                break
+            elif not stack and start_char in list(")]}"):
+                end_position = start_position - i - 1
+                break
+        if end_position == -1:
+            return
+        # Move cursor
+        if self.visual_mode == 'char':
+            selection = editor.get_extra_selections('vim_visual')[0]
+            if position > end_position:
+                selection.cursor.setPosition(position+1)
+                selection.cursor.setPosition(end_position - 1,
+                                             QTextCursor.KeepAnchor)
+            else:
+                selection.cursor.setPosition(position)
+                selection.cursor.setPosition(end_position,
+                                             QTextCursor.KeepAnchor)
+            editor.set_extra_selections('vim_visual', [selection])
+            editor.update_extra_selections()
+            self._set_cursor(end_position)
+        else:
+            self._set_cursor(end_position, mode=QTextCursor.MoveAnchor)
 
     # %% Insertion
     def i(self, leftover=None, repeat=1):
