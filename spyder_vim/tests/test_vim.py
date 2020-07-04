@@ -251,6 +251,68 @@ def test_cursor_position(vim_bot):
     assert col == 10
 
 
+def test_percent_command(vim_bot):
+    """Test % command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'o')
+    qtbot.keyClicks(editor, 'a(aa{bbb[test]bbb}aa)')
+    qtbot.keyClicks(cmd_line, '^%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 20
+    qtbot.keyClicks(cmd_line, '%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 1
+    qtbot.keyClicks(cmd_line, 'l%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 17
+    qtbot.keyClicks(cmd_line, '%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 4
+    qtbot.keyClicks(cmd_line, 'fe%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 8
+    qtbot.keyClicks(cmd_line, '%')
+    _, col = editor.get_cursor_line_column()
+    assert col == 13
+
+
+def test_percent_command_char_mode(vim_bot):
+    """Test % command in char mode."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    cmd_line = vim.get_focus_widget()
+    line, _ = editor.get_cursor_line_column()
+    qtbot.keyClicks(cmd_line, 'o')
+    qtbot.keyClicks(editor, '(aa{bbb[test]bbb}aa)')
+    qtbot.keyClicks(cmd_line, '^')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '(aa{bbb[test]bbb}aa)'
+    qtbot.keyClicks(cmd_line, '$')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '(aa{bbb[test]bbb}aa)'
+    qtbot.keyClicks(cmd_line, '^7l')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '[test]'
+    qtbot.keyClicks(cmd_line, '^12l')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '[test]'
+    qtbot.keyClicks(cmd_line, '^3l')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '{bbb[test]bbb}'
+    qtbot.keyClicks(cmd_line, '$3h')
+    qtbot.keyClicks(cmd_line, 'v%y')
+    clipboard = QApplication.clipboard().text()
+    assert clipboard == '{bbb[test]bbb}'
+    
+
 def test_select_command_brackets(vim_bot):
     """Test a selection multiple brackets"""
     main, editor_stack, editor, vim, qtbot = vim_bot
