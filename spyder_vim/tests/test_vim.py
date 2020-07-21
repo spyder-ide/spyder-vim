@@ -1314,6 +1314,44 @@ def test_dd_command(vim_bot):
     assert new_num_lines == num_lines - 1
 
 
+def test_cc_command(vim_bot):
+    """Delete line and insert."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    num_lines = editor.get_line_count()
+    qtbot.keyClicks(cmd_line, 'cc')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     '\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_cc_command_repeat(vim_bot):
+    """Delete lines and insert."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    num_lines = editor.get_line_count()
+    qtbot.keyClicks(cmd_line, '3cc')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     '\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_uppercase_d_command(vim_bot):
     """Delete line."""
     main, editor_stack, editor, vim, qtbot = vim_bot
@@ -1346,16 +1384,16 @@ def test_dw_command(vim_bot):
 def test_cw_command(vim_bot):
     """Cut words and edit."""
     main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text("abc1 abc2  abc3 abc4 abc5 abc6")
     editor.stdkey_backspace()
-    editor.go_to_line(3)
-    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
-    line, col = editor.get_cursor_line_column()
     editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
     cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '4cw')
+    assert editor.toPlainText() == " abc5 abc6"
+    editor.set_text("abc5 abc6")
+    editor.stdkey_backspace()
     qtbot.keyClicks(cmd_line, 'cw')
-    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
-    new_line, new_col = editor.get_cursor_line_column()
-    assert new_col == 2
+    assert editor.toPlainText() == " abc6"
 
 
 def test_x_command(vim_bot):
