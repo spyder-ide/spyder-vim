@@ -1314,6 +1314,44 @@ def test_dd_command(vim_bot):
     assert new_num_lines == num_lines - 1
 
 
+def test_cc_command(vim_bot):
+    """Delete line and insert."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(3)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    num_lines = editor.get_line_count()
+    qtbot.keyClicks(cmd_line, 'cc')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     'line 1\n'
+                     '\n'
+                     'line 3\n'
+                     'line 4')
+    assert text == expected_text
+
+
+def test_cc_command_repeat(vim_bot):
+    """Delete lines and insert."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.stdkey_backspace()
+    editor.go_to_line(2)
+    editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    qtbot.keyPress(editor, Qt.Key_Right)
+    cmd_line = vim.get_focus_widget()
+    num_lines = editor.get_line_count()
+    qtbot.keyClicks(cmd_line, '3cc')
+    text = editor.toPlainText()
+    expected_text = ('   123\n'
+                     '\n'
+                     'line 4')
+    assert text == expected_text
+
+
 def test_uppercase_d_command(vim_bot):
     """Delete line."""
     main, editor_stack, editor, vim, qtbot = vim_bot

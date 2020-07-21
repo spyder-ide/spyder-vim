@@ -903,6 +903,11 @@ class VimKeys(QObject):
         editor.setTextCursor(cursor)
         self._widget.update_vim_cursor()
 
+    def cc(self, repeat):
+        """Delete line then insert"""
+        self.dd(repeat)
+        self.O(repeat=1)
+
     def D(self, repeat):
         """Delete the characters under the cursor until the end of the line."""
         editor = self._widget.editor()
