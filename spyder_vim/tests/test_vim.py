@@ -1346,16 +1346,16 @@ def test_dw_command(vim_bot):
 def test_cw_command(vim_bot):
     """Cut words and edit."""
     main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text("abc1 abc2  abc3 abc4 abc5 abc6")
     editor.stdkey_backspace()
-    editor.go_to_line(3)
-    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
-    line, col = editor.get_cursor_line_column()
     editor.moveCursor(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
     cmd_line = vim.get_focus_widget()
+    qtbot.keyClicks(cmd_line, '4cw')
+    assert editor.toPlainText() == " abc5 abc6"
+    editor.set_text("abc5 abc6")
+    editor.stdkey_backspace()
     qtbot.keyClicks(cmd_line, 'cw')
-    editor.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
-    new_line, new_col = editor.get_cursor_line_column()
-    assert new_col == 2
+    assert editor.toPlainText() == " abc6"
 
 
 def test_x_command(vim_bot):

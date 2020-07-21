@@ -935,8 +935,12 @@ class VimKeys(QObject):
 
     def cw(self, repeat):
         """Cut words and edit."""
-        self._cut_word(repeat, QTextCursor.EndOfWord)
-        self.i(repeat)
+        if repeat == 1:
+            self._cut_word(repeat, QTextCursor.EndOfWord)
+        else:
+            self._cut_word(repeat-1, QTextCursor.NextWord)
+            self._cut_word(1, QTextCursor.EndOfWord)
+        self.i()
 
     def x(self, repeat):
         """Delete the character under cursor with delete from EndOfLine."""
