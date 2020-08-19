@@ -1943,3 +1943,28 @@ def test_gt_command(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, 'gT')
     assert 0 == editor_stack.get_stack_index()
+
+
+@pytest.mark.parametrize(
+    "text, command_list, result, cursor_pos",
+    [
+        ('abc\ndef\nghi\n', ['J'], 'abc def\nghi\n', 3),
+        ('a\nb\nc\n', ['V', 'J'], 'a b\nc\n', 1),
+        ('a\nb\n\nc\n', ['V', '2j', 'J'], 'a b\nc\n', 1),
+        ('a\nb\nc\n', ['V', 'j', 'J'], 'a b\nc\n', 1),
+        ('a\nb\nc\n', ['V', '2j', 'J'], 'a b c\n', 3),
+        ('a\nb\n\n\n  \nc\n', ['j', 'V', '4j', 'J'], 'a\nb c\n', 3)
+    ]
+)
+def test_J_command(vim_bot, text, command_list, result, cursor_pos):
+    """Test J command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text(text)
+
+    cmd_line = vim.get_focus_widget()
+    for command in command_list:
+        qtbot.keyClicks(cmd_line, command)
+
+    assert editor.toPlainText() == result
+    assert editor.textCursor().position() == cursor_pos
+
