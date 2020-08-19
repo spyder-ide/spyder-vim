@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehHjklLnNpPGyw$^0 \r\b%"
+VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF\""
 
@@ -920,6 +920,68 @@ class VimKeys(QObject):
         editor.setTextCursor(cursor)
         editor.setTextCursor(cursor)
         editor.cut()
+        self._widget.update_vim_cursor()
+
+    def J(self, repeat):
+        """Join lines, with a minimum of two lines."""
+        editor = self._widget.editor()
+        cursor = editor.textCursor()
+        n_block = editor.blockCount()
+
+        if self.visual_mode:
+            selection = editor.get_extra_selections('vim_visual')[0]
+
+            cursor_pos_start, cursor_pos_end = self._get_selection_positions()
+            cursor_pos_start, cursor_pos_end = sorted([cursor_pos_start,
+                                                       cursor_pos_end])
+            if self.visual_mode == 'line':
+                cursor_pos_end -= 1
+
+            selection.cursor.setPosition(cursor_pos_start)
+            no_block_start = selection.cursor.blockNumber()
+
+            selection.cursor.setPosition(cursor_pos_end)
+            no_block_end = selection.cursor.blockNumber()
+
+            self.exit_visual_mode()
+
+            if no_block_start == no_block_end:
+                no_block_end += 1
+
+            cursor_pos_start = min([cursor_pos_start, cursor_pos_end])
+        else:
+            no_block_start = cursor.blockNumber()
+            no_block_end = cursor.blockNumber() + repeat
+            cursor_pos_start = cursor.position()
+
+        if no_block_end >= n_block - 1:
+            no_block_end = n_block - 1
+
+        if no_block_start == no_block_end:
+            return
+
+        n_line = no_block_end - no_block_start + 1
+        text_list = ['']
+        cursor.setPosition(cursor_pos_start)
+        for _ in range(n_line - 1):
+            cursor.movePosition(QTextCursor.NextBlock)
+            text = cursor.block().text().lstrip()
+            if text:
+                text_list.append(text)
+
+        # Replace text
+        cursor.setPosition(cursor_pos_start)
+        cursor.movePosition(QTextCursor.EndOfLine)
+        cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor,
+                            n_line - 1)
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        cursor.insertText(' '.join(text_list))
+
+        # Move position of cursor
+        cursor.movePosition(QTextCursor.EndOfBlock)
+        cursor.movePosition(QTextCursor.Left, n=len(text_list[-1]) + 1)
+        editor.setTextCursor(cursor)
+
         self._widget.update_vim_cursor()
 
     def _cut_word(self, repeat, move_operation):
