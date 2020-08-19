@@ -918,8 +918,8 @@ class VimKeys(QObject):
         text = cursor.selectedText().replace('\u2029', '\n')
         self.set_register(text, self._widget.selection_type[1], register=self.register, cut=True)
         editor.setTextCursor(cursor)
-        editor.setTextCursor(cursor)
         editor.cut()
+        self.h()
         self._widget.update_vim_cursor()
 
     def J(self, repeat):
