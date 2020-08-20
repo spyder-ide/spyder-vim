@@ -1968,3 +1968,24 @@ def test_J_command(vim_bot, text, command_list, result, cursor_pos):
     assert editor.toPlainText() == result
     assert editor.textCursor().position() == cursor_pos
 
+
+@pytest.mark.parametrize(
+    "text, command_list, result, cursor_pos",
+    [
+        ('abcde', ['~'], 'Abcde', 1),
+        ('abcde', ['2~'], 'ABcde', 2),
+        ('abcde', ['20~'], 'ABCDE', 4),
+        ('a b\n22\nc \nde\n', ['j', 'V', '2j', '~'], 'a b\n22\nC \nDE\n', 4)
+    ]
+)
+def test_TILDE_command(vim_bot, text, command_list, result, cursor_pos):
+    """Test TILDE command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text(text)
+
+    cmd_line = vim.get_focus_widget()
+    for command in command_list:
+        qtbot.keyClicks(cmd_line, command)
+
+    assert editor.toPlainText() == result
+    assert editor.textCursor().position() == cursor_pos
