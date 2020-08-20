@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%"
+VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%~"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fF\""
 
@@ -47,6 +47,7 @@ SYMBOLS_REPLACEMENT = {
     "^": "CARET",
     "\"": "QUOTE",
     "%": "PERCENT",
+    "~": "TILDE"
 }
 
 
@@ -1208,6 +1209,40 @@ class VimKeys(QObject):
             editorstack.tabs.tab_navigate(-1)
         self._widget.commandline.setFocus()
 
+    def TILDE(self, repeat):
+        """
+        Switch case of the character under the cursor
+        and move the cursor to the right.
+        """
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+
+        if self.visual_mode:
+            cur_pos, end_pos = self._get_selection_positions()
+        else:
+            cur_pos = cursor.position()
+            end_pos = cur_pos + repeat
+
+            cursor.movePosition(QTextCursor.EndOfBlock)
+            line_end_pos = cursor.position()
+            if line_end_pos < end_pos:
+                end_pos = line_end_pos
+
+        cursor.setPosition(cur_pos)
+        cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+        text = cursor.selectedText()
+        cursor.insertText(text.swapcase())
+
+        if self.visual_mode:
+            self.exit_visual_mode()
+            cursor.setPosition(cur_pos)
+            editor.setTextCursor(cursor)
+        else:
+            if cursor.atBlockEnd():
+                self.h(1)
+
+        self._widget.update_vim_cursor()
+
 
 # %% Vim commands
 class VimCommands(object):
@@ -1386,7 +1421,7 @@ class VimWidget(QWidget):
         """Parse input command."""
         if not text or text[0] in VIM_COMMAND_PREFIX:
             return
-        print(text)
+
         if text.startswith("0"):
             # Special case to simplify regexp
             repeat, key, leftover = 1, "0", text[1:]
