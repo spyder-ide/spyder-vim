@@ -440,6 +440,7 @@ class VimKeys(QObject):
             pass
 
     def r(self, leftover, repeat=1):
+        """Replace the character under the cursor with character of argument."""
         editor = self._widget.editor()
         cursor = self._editor_cursor()
 
