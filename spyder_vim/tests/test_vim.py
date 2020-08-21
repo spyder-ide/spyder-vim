@@ -1989,3 +1989,26 @@ def test_TILDE_command(vim_bot, text, command_list, result, cursor_pos):
 
     assert editor.toPlainText() == result
     assert editor.textCursor().position() == cursor_pos
+
+
+@pytest.mark.parametrize(
+    "text, command_list, result, cursor_pos",
+    [
+        ('abcde', ['r1'], '1bcde', 0),
+        ('abcde', ['2r1'], '11cde', 1),
+        ('abcde', ['l', '5r1'], 'abcde', 1),
+        ('a b\n22\nc \nde\n', ['j', 'V', '2j', 'r1'], 'a b\n11\n11\n11\n', 4),
+        ('a b\ncdef\ng\n', ['v', 'l', 'j', 'r1'], '111\n11ef\ng\n', 0)
+    ]
+)
+def test_r_command(vim_bot, text, command_list, result, cursor_pos):
+    """Test r command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text(text)
+
+    cmd_line = vim.get_focus_widget()
+    for command in command_list:
+        qtbot.keyClicks(cmd_line, command)
+
+    assert editor.toPlainText() == result
+    assert editor.textCursor().position() == cursor_pos

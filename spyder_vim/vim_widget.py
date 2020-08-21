@@ -27,7 +27,7 @@ RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
 VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%~"
 VIM_VISUAL_PREFIX = "agi"
-VIM_ARG_PREFIX = "fF\""
+VIM_ARG_PREFIX = "fFr\""
 
 RE_VIM_VISUAL_PREFIX = re.compile(
     RE_VIM_PREFIX_STR.format(prefixes=VIM_VISUAL_PREFIX))
@@ -74,7 +74,7 @@ class VimKeys(QObject):
         leftover = ""
         if key.startswith("_"):
             return
-        elif key[0] in "fF":
+        elif key[0] in "fFr":
             leftover = key[1]
             key = key[0]
         elif key[0] in "ia" and self.visual_mode == "char":
@@ -438,6 +438,39 @@ class VimKeys(QObject):
             self.h(repeat=cur_pos_in_block - index)
         except IndexError:
             pass
+
+    def r(self, leftover, repeat=1):
+        """Replace the character under the cursor with character of argument."""
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+
+        if self.visual_mode:
+            cur_pos, end_pos = self._get_selection_positions()
+            if self.visual_mode == 'char':
+                end_pos += 1
+        else:
+            cur_pos = cursor.position()
+            cursor.movePosition(QTextCursor.EndOfBlock)
+            line_end_pos = cursor.position()
+            if line_end_pos - cur_pos < repeat:
+                self._widget.update_vim_cursor()
+                return
+            end_pos = cur_pos + repeat
+
+        cursor.setPosition(cur_pos)
+        cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+        text = cursor.selectedText().replace('\u2029', '\n')
+        text_sub = re.sub(r'.', leftover, text)
+        cursor.insertText(text_sub)
+
+        if self.visual_mode:
+            self.exit_visual_mode()
+            cursor.setPosition(cur_pos)
+            editor.setTextCursor(cursor)
+        else:
+            self.h(1)
+
+        self._widget.update_vim_cursor()
 
     def SPACE(self, repeat=1):
         """Move cursor to the right."""
