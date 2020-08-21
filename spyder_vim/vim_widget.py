@@ -456,9 +456,6 @@ class VimKeys(QObject):
                 return
             end_pos = cur_pos + repeat
 
-        print("-" * 15)
-        print(cur_pos, end_pos)
-        print("-" * 15)
         cursor.setPosition(cur_pos)
         cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
         text = cursor.selectedText().replace('\u2029', '\n')
