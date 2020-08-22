@@ -49,6 +49,7 @@ SYMBOLS_REPLACEMENT = {
     "%": "PERCENT",
     "~": "TILDE"
 }
+INDENT = "    "
 
 
 # %% Vim shortcuts
@@ -1276,6 +1277,91 @@ class VimKeys(QObject):
 
         self._widget.update_vim_cursor()
 
+    def _get_selected_block_number(self, repeat=1):
+        """Return selected block number."""
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        start_block_no = cursor.block().blockNumber()
+        end_block_no = start_block_no + repeat - 1
+        if end_block_no >= editor.blockCount():
+            end_block_no = editor.blockCount() - 1
+
+        return start_block_no, end_block_no
+
+    def _get_pos_of_block(self, block_no):
+        """Return start position & end position of block."""
+        editor = self._widget.editor()
+        block = editor.document().findBlockByNumber(block_no)
+        start_pos = block.position()
+        end_pos = start_pos + block.length() - 1
+        return start_pos, end_pos
+
+    def _get_text_of_blocks(self, start_block_no, end_block_no):
+        """Return text of blocks."""
+        text_list = []
+        editor = self._widget.editor()
+        for no in range(start_block_no, end_block_no + 1):
+            block = editor.document().findBlockByNumber(no)
+            text_list.append(block.text())
+
+        return text_list
+
+    def GREATERGREATER(self, repeat=1):
+        """Shift lines rightwards."""
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+
+        start_block_no, end_block_no = self._get_selected_block_number(repeat)
+        cursor_start_pos, __ = self._get_pos_of_block(start_block_no)
+        __, end_pos = self._get_pos_of_block(end_block_no)
+
+        text_list = self._get_text_of_blocks(start_block_no, end_block_no)
+        text_list_indent = []
+        for text in text_list:
+            if text:
+                text_list_indent.append(INDENT + text)
+            else:
+                text_list_indent.append(text)
+        text_indent = '\n'.join(text_list_indent)
+
+        # Replace text
+        cursor.setPosition(cursor_start_pos)
+        cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+        cursor.insertText(text_indent)
+
+        # Move cursor position
+        cursor.setPosition(cursor_start_pos)
+        editor.setTextCursor(cursor)
+        self.CARET()
+
+    def LESSLESS(self, repeat=1):
+        """Shift lines leftwards."""
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+
+        start_block_no, end_block_no = self._get_selected_block_number(repeat)
+        cusor_start_pos, __ = self._get_pos_of_block(start_block_no)
+        __, end_pos = self._get_pos_of_block(end_block_no)
+
+        text_list = self._get_text_of_blocks(start_block_no, end_block_no)
+        text_list_indent = []
+        len_indent = len(INDENT)
+        for text in text_list:
+            n_space = len(text) - len(text.lstrip())
+            idx_discard = min([n_space, len_indent])
+            text_list_indent.append(text[idx_discard:])
+        text_indent = '\n'.join(text_list_indent)
+
+        # Replace text
+        cursor.setPosition(cusor_start_pos)
+        cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+        cursor.insertText(text_indent)
+
+        # Move cursor position
+        start_pos, __ = self._get_pos_of_block(start_block_no)
+        cursor.setPosition(cusor_start_pos)
+        editor.setTextCursor(cursor)
+        self.CARET()
 
 # %% Vim commands
 class VimCommands(object):
