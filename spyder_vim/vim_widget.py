@@ -25,7 +25,7 @@ VIM_PREFIX = "acdfFgmritTyzZ@'`\"<>"
 RE_VIM_PREFIX_STR = r"^(\d*)([{prefixes}].|[^{prefixes}0123456789])(.*)$"
 RE_VIM_PREFIX = re.compile(RE_VIM_PREFIX_STR.format(prefixes=VIM_PREFIX))
 
-VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%~"
+VIM_VISUAL_OPS = "bdehHjJklLnNpPGyw$^0 \r\b%~<>"
 VIM_VISUAL_PREFIX = "agi"
 VIM_ARG_PREFIX = "fFr\""
 
@@ -1281,10 +1281,25 @@ class VimKeys(QObject):
         """Return selected block number."""
         editor = self._widget.editor()
         cursor = self._editor_cursor()
-        start_block_no = cursor.block().blockNumber()
-        end_block_no = start_block_no + repeat - 1
-        if end_block_no >= editor.blockCount():
-            end_block_no = editor.blockCount() - 1
+        if self.visual_mode:
+            selection = editor.get_extra_selections('vim_visual')[0]
+
+            cursor_pos_start, cursor_pos_end = self._get_selection_positions()
+            cursor_pos_start, cursor_pos_end = sorted([cursor_pos_start,
+                                                       cursor_pos_end])
+            if self.visual_mode == 'line':
+                cursor_pos_end -= 1
+
+            selection.cursor.setPosition(cursor_pos_start)
+            start_block_no = selection.cursor.blockNumber()
+
+            selection.cursor.setPosition(cursor_pos_end)
+            end_block_no = selection.cursor.blockNumber()
+        else:
+            start_block_no = cursor.block().blockNumber()
+            end_block_no = start_block_no + repeat - 1
+            if end_block_no >= editor.blockCount():
+                end_block_no = editor.blockCount() - 1
 
         return start_block_no, end_block_no
 
@@ -1305,6 +1320,20 @@ class VimKeys(QObject):
             text_list.append(block.text())
 
         return text_list
+
+    def GREATER(self, repeat=1):
+        """Shift lines rightwards in visual mode."""
+        cursor_pos_start, _ = self._get_selection_positions()
+        start_block_no, end_block_no = self._get_selected_block_number(1)
+        n_line = end_block_no - start_block_no + 1
+        self.exit_visual_mode()
+
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        cursor.setPosition(cursor_pos_start)
+        editor.setTextCursor(cursor)
+
+        self.GREATERGREATER(repeat=n_line)
 
     def GREATERGREATER(self, repeat=1):
         """Shift lines rightwards."""
@@ -1333,6 +1362,20 @@ class VimKeys(QObject):
         cursor.setPosition(cursor_start_pos)
         editor.setTextCursor(cursor)
         self.CARET()
+
+    def LESS(self, repeat=1):
+        """Shift lines leftwards in visual mode."""
+        cursor_pos_start, _ = self._get_selection_positions()
+        start_block_no, end_block_no = self._get_selected_block_number(1)
+        n_line = end_block_no - start_block_no + 1
+        self.exit_visual_mode()
+
+        editor = self._widget.editor()
+        cursor = self._editor_cursor()
+        cursor.setPosition(cursor_pos_start)
+        editor.setTextCursor(cursor)
+
+        self.LESSLESS(repeat=n_line)
 
     def LESSLESS(self, repeat=1):
         """Shift lines leftwards."""
