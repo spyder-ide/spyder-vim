@@ -2017,6 +2017,29 @@ def test_r_command(vim_bot, text, command_list, result, cursor_pos):
 @pytest.mark.parametrize(
     "text, command_list, result, cursor_pos",
     [
+        ('ab\ncdef\n', ['v', '>'], '    ab\ncdef\n', 4),
+        ('ab\ncdef\n', ['V', '>'], '    ab\ncdef\n', 4),
+        ('ab\n\ncdef\n \n', ['V', '3j', '>'], '    ab\n\n    cdef\n     \n', 4),
+        ('ab\n\ncdef\n \n', ['l', 'v', '3j', '>'], '    ab\n\n    cdef\n     \n', 4)
+    ]
+)
+def test_greater_visual_command(vim_bot, text, command_list, result,
+                                cursor_pos):
+    """Test >> command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text(text)
+
+    cmd_line = vim.get_focus_widget()
+    for command in command_list:
+        qtbot.keyClicks(cmd_line, command)
+
+    assert editor.toPlainText() == result
+    assert editor.textCursor().position() == cursor_pos
+
+
+@pytest.mark.parametrize(
+    "text, command_list, result, cursor_pos",
+    [
         ('ab\ncdef\n', ['>>'], '    ab\ncdef\n', 4),
         ('ab\n\ncdef\n \n', ['4>>'], '    ab\n\n    cdef\n     \n', 4)
     ]
@@ -2024,6 +2047,28 @@ def test_r_command(vim_bot, text, command_list, result, cursor_pos):
 def test_greatergreater_command(vim_bot, text, command_list, result,
                                 cursor_pos):
     """Test >> command."""
+    main, editor_stack, editor, vim, qtbot = vim_bot
+    editor.set_text(text)
+
+    cmd_line = vim.get_focus_widget()
+    for command in command_list:
+        qtbot.keyClicks(cmd_line, command)
+
+    assert editor.toPlainText() == result
+    assert editor.textCursor().position() == cursor_pos
+
+
+@pytest.mark.parametrize(
+    "text, command_list, result, cursor_pos",
+    [
+        ('    ab\ncdef\n', ['l', 'v', '<'], 'ab\ncdef\n', 0),
+        ('    ab\ncdef\n', ['V', '<'], 'ab\ncdef\n', 0),
+        (' ab\n  \n    cdef\n     \n', ['j', 'l', 'v', '2j', '<'], ' ab\n\ncdef\n \n', 4),
+        (' ab\n  \n    cdef\n     \n', ['j', 'V', '2j', '<'], ' ab\n\ncdef\n \n', 4)
+    ]
+)
+def test_less_visual_command(vim_bot, text, command_list, result, cursor_pos):
+    """Test << command."""
     main, editor_stack, editor, vim, qtbot = vim_bot
     editor.set_text(text)
 
