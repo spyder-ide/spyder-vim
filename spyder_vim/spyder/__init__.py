@@ -5,7 +5,7 @@
 # Licensed under the terms of the MIT license
 # ----------------------------------------------------------------------------
 """
-spyder-vim.
-"""
+spyder-vim
 
-__version__ = "0.0.1-dev0"
+A plugin to enable vim keybingins to the spyder editor.
+"""

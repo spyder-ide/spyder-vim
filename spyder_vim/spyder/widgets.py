@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-# -----------------------------------------------------------------------------
-# Copyright (c) Spyder Project Contributors
+# ----------------------------------------------------------------------------
+# Copyright © 2022, spyder-vim
 #
-# Licensed under the terms of the MIT License
-# (see LICENSE.txt for details)
-# -----------------------------------------------------------------------------
-"""Vim Widget."""
-
-
+# Licensed under the terms of the MIT license
+# ----------------------------------------------------------------------------
+"""
+spyder-vim Main Widget.
+"""
 import re
 import bisect
 from time import time
@@ -17,7 +16,15 @@ from qtpy.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QTextEdit, QLabel,
 from qtpy.QtGui import QTextCursor, QTextDocument
 from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal, QPoint
 
-from spyder.config.gui import get_color_scheme, is_dark_interface
+# Spyder imports
+from spyder.config.gui import is_dark_interface
+from spyder.api.config.decorators import on_conf_change
+from spyder.api.translations import get_translation
+
+from spyder.api.widgets.mixins import SpyderWidgetMixin
+
+# Localization
+_ = get_translation("spyder_vim.spyder")
 
 
 VIM_COMMAND_PREFIX = ":!/?"
@@ -1509,9 +1516,9 @@ class VimLineEdit(QLineEdit):
 
     def focusOutEvent(self, event):
         """Enter editor mode."""
-        QLineEdit.focusOutEvent(self, event)
-        self.parent().editor().set_extra_selections('vim_cursor', [QTextEdit.ExtraSelection()])
-        self.parent().editor().update_extra_selections()
+        super().focusOutEvent(event)
+        self.parent().editor().clear_extra_selections('vim_cursor')
+        self.parent().editor().clear_extra_selections('search')
         self.parent().on_mode_changed("insert")
         if self.parent().vim_keys.visual_mode:
             self.parent().vim_keys.exit_visual_mode()
@@ -1638,9 +1645,7 @@ class VimWidget(QWidget):
     def editor(self):
         """Retrieve text of current opened file."""
         editorstack = self.editor_widget.get_current_editorstack()
-        index = editorstack.get_stack_index()
-        finfo = editorstack.data[index]
-        return finfo.editor
+        return editorstack.get_current_editor()
 
     def update_vim_cursor(self):
         """Update Vim cursor position."""

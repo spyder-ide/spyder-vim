@@ -1,0 +1,6 @@
+check-manifest
+codecov
+pytest
+pytest-cov
+pytest-qt
+recommonmark
