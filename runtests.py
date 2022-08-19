@@ -16,7 +16,7 @@ def main():
     """
     Run pytest tests.
     """
-    errno = pytest.main(['-x', 'spyder_vim', '-v',
+    errno = pytest.main(['-x', 'tests', '-v',
                          '-rw', '--durations=10',
                          '--cov=spyder_vim', '--cov-report=term-missing'])
 
