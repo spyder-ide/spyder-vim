@@ -88,7 +88,7 @@ class VimKeys(QObject):
         elif key[0] in "ia" and self.visual_mode == "char":
             leftover = key[1]
             key = key[0]
-        elif key[0] is "\"":
+        elif key[0] == "\"":
             leftover = key[1]
             key = key[0]
         for symbol, text in SYMBOLS_REPLACEMENT.items():

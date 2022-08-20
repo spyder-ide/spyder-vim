@@ -1493,7 +1493,7 @@ def test_p_command_char_mode(vim_bot):
     qtbot.keyClicks(cmd_line, 'p')
     text = editor.toPlainText()
     expected_text = ('    123\n'
-                     'lin 123\n'
+                     'lin123\n'
                      'line 1\n'
                      'line 2\n'
                      'line 3\n'
