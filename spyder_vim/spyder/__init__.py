@@ -7,5 +7,5 @@
 """
 spyder-vim
 
-A plugin to enable vim keybingins to the spyder editor.
+A plugin to enable vim keybindings to the spyder editor.
 """

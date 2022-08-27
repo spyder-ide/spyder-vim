@@ -11,10 +11,11 @@ spyder-vim Plugin.
 # Third-party imports
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtGui import QIcon, QKeySequence
-from qtpy.QtWidgets import QVBoxLayout, QShortcut
+from qtpy.QtWidgets import QShortcut
 
 # Spyder imports
 from spyder.api.plugins import Plugins, SpyderPluginV2
+from spyder.api.plugin_registration.decorators import on_plugin_available
 from spyder.api.translations import get_translation
 
 # Local imports
@@ -25,25 +26,18 @@ from spyder_vim.spyder.widgets import VimWidget
 _ = get_translation("spyder_vim.spyder")
 
 
-class spyder_vim(SpyderPluginV2):
+class SpyderVim(SpyderPluginV2):
     """
     spyder-vim plugin.
     """
 
     focus_changed = Signal()
     NAME = "spyder_vim"
-    REQUIRES = []
+    REQUIRES = [Plugins.Editor]
     OPTIONAL = []
     CONTAINER_CLASS = spyder_vimContainer
     CONF_SECTION = NAME
     CONF_WIDGET_CLASS = spyder_vimConfigPage
-
-    def __init__(self, parent, configuration=None):
-        super().__init__(parent)
-        self.vim_cmd = VimWidget(self.main.editor, self.main)
-        layout = QVBoxLayout()
-        layout.addWidget(self.vim_cmd)
-        # self.setLayout(layout)
 
     # --- Signals
 
@@ -60,10 +54,20 @@ class spyder_vim(SpyderPluginV2):
         return QIcon()
 
     def on_initialize(self):
-        container = self.get_container()
-        self.focus_changed.connect(self.main.plugin_focus_changed)
-        self.vim_cmd.editor_widget.layout().addWidget(self.vim_cmd)
-        sc = QShortcut(QKeySequence("Esc"), self.vim_cmd.editor_widget.editorsplitter, self.vim_cmd.commandline.setFocus)
+        pass
+
+    @on_plugin_available(plugin=Plugins.Editor)
+    def on_editor_available(self):
+        """
+        Set up interactions when Editor plugin available.
+        """
+        editor = self.get_plugin(Plugins.Editor)
+        self.vim_cmd = VimWidget(editor, self.main)
+        editor.layout().addWidget(self.vim_cmd)
+        sc = QShortcut(
+            QKeySequence("Esc"),
+            editor.editorsplitter,
+            self.vim_cmd.commandline.setFocus)
         sc.setContext(Qt.WidgetWithChildrenShortcut)
 
     def check_compatibility(self):

@@ -26,12 +26,12 @@ setup(
     install_requires=[
         "qtpy",
         "qtawesome",
-        "spyder>=5.0.1",
+        "spyder>=5.2.2",
     ],
     packages=find_packages(),
     entry_points={
         "spyder.plugins": [
-            "spyder_vim = spyder_vim.spyder.plugin:spyder_vim"
+            "spyder_vim = spyder_vim.spyder.plugin:SpyderVim"
         ],
     },
     classifiers=[
@@ -42,10 +42,11 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering",
+        "Topic :: Text Editors :: Integrated Development Environments (IDE)",
     ],
 )

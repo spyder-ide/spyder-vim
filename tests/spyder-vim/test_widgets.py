@@ -24,7 +24,7 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 from spyder.plugins.editor.widgets.editor import EditorStack
 
 # Local imports
-from spyder_vim.spyder.plugin import spyder_vim
+from spyder_vim.spyder.plugin import SpyderVim
 from spyder_vim.spyder.widgets import RE_VIM_PREFIX
 
 
@@ -32,10 +32,11 @@ LOCATION = osp.realpath(osp.join(
     os.getcwd(), osp.dirname(__file__)))
 
 
-class VimTesting(spyder_vim):
+class VimTesting(SpyderVim):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.on_editor_available()
 
     def get_focus_widget(self):
         return self.vim_cmd.commandline
@@ -74,6 +75,9 @@ class MainMock(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.editor)
         self.setLayout(layout)
+
+    def get_plugin(self, dummy):
+        return self.editor
 
     add_dockwidget = Mock()
 
