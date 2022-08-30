@@ -17,11 +17,11 @@ setup(
     # See: https://setuptools.readthedocs.io/en/latest/setuptools.html
     name="spyder-vim",
     version=__version__,
-    author="spyder-vim",
-    author_email="contrebasse@gmail.com",
-    description="A plugin to enable vim keybingins to the spyder editor",
+    author="Joseph Martinot-Lagarde and the spyder-vim contributors",
+    author_email="spyder.python@gmail.com",
+    description="A plugin to enable vim keybindings to the spyder editor",
     license="MIT license",
-    url="https://github.com/Joseph Martinot-Lagarde/spyder-vim",
+    url="https://github.com/spyder-ide/spyder-vim",
     python_requires='>= 3.7',
     install_requires=[
         "qtpy",

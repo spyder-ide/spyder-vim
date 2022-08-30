@@ -13,7 +13,7 @@ from spyder.api.translations import get_translation
 _ = get_translation("spyder_vim.spyder")
 
 
-class spyder_vimConfigPage(PluginConfigPage):
+class SpyderVimConfigPage(PluginConfigPage):
 
     # --- PluginConfigPage API
     # ------------------------------------------------------------------------

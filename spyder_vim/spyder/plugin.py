@@ -19,8 +19,8 @@ from spyder.api.plugin_registration.decorators import on_plugin_available
 from spyder.api.translations import get_translation
 
 # Local imports
-from spyder_vim.spyder.confpage import spyder_vimConfigPage
-from spyder_vim.spyder.container import spyder_vimContainer
+from spyder_vim.spyder.confpage import SpyderVimConfigPage
+from spyder_vim.spyder.container import SpyderVimContainer
 from spyder_vim.spyder.widgets import VimWidget
 
 _ = get_translation("spyder_vim.spyder")
@@ -31,13 +31,12 @@ class SpyderVim(SpyderPluginV2):
     spyder-vim plugin.
     """
 
-    focus_changed = Signal()
     NAME = "spyder_vim"
     REQUIRES = [Plugins.Editor]
     OPTIONAL = []
-    CONTAINER_CLASS = spyder_vimContainer
+    CONTAINER_CLASS = SpyderVimContainer
     CONF_SECTION = NAME
-    CONF_WIDGET_CLASS = spyder_vimConfigPage
+    CONF_WIDGET_CLASS = SpyderVimConfigPage
 
     # --- Signals
 
@@ -48,7 +47,7 @@ class SpyderVim(SpyderPluginV2):
         return _("spyder-vim")
 
     def get_description(self):
-        return _("A plugin to enable vim keybingins to the spyder editor")
+        return _("A plugin to enable vim keybindings to the spyder editor")
 
     def get_icon(self):
         return QIcon()

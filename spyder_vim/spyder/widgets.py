@@ -18,10 +18,7 @@ from qtpy.QtCore import Qt, QObject, QRegularExpression, Signal, QPoint
 
 # Spyder imports
 from spyder.config.gui import is_dark_interface
-from spyder.api.config.decorators import on_conf_change
 from spyder.api.translations import get_translation
-
-from spyder.api.widgets.mixins import SpyderWidgetMixin
 
 # Localization
 _ = get_translation("spyder_vim.spyder")
@@ -262,7 +259,7 @@ class VimKeys(QObject):
     def n(self, repeat=1, reverse=False):
         """Move cursor to the next searched key"""
         cursor = self._editor_cursor()
-        search_stack = self.search_dict["stack"]
+        search_stack = self.search_dict.get("stack", None)
         if not search_stack:
             return
         if not self.search_dict["reverse"]^reverse:

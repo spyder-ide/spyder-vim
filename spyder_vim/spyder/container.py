@@ -15,7 +15,7 @@ from spyder.api.widgets.main_container import PluginMainContainer
 _ = get_translation("spyder_vim.spyder")
 
 
-class spyder_vimContainer(PluginMainContainer):
+class SpyderVimContainer(PluginMainContainer):
 
     # Signals
 
