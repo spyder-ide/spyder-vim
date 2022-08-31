@@ -180,7 +180,6 @@ class VimKeys(QObject):
                 selection.cursor.setPosition(prev_cursor_block.position())
                 selection.cursor.setPosition(pos, QTextCursor.KeepAnchor)
         editor.set_extra_selections('vim_visual', [selection])
-        editor.update_extra_selections()
 
     def _get_selection_positions(self):
         editor = self._widget.editor()
@@ -252,7 +251,6 @@ class VimKeys(QObject):
             cursor = editor.document().find(QRegularExpression(key), cursor,
                                         QTextDocument.FindCaseSensitively)
         editor.set_extra_selections('search', [i for i in search_stack])
-        editor.update_extra_selections()
         search_dict = {"stack": search_stack, "reverse": reverse}
         return search_dict
 
@@ -678,7 +676,6 @@ class VimKeys(QObject):
                 selection.cursor.setPosition(end_position,
                                              QTextCursor.KeepAnchor)
             editor.set_extra_selections('vim_visual', [selection])
-            editor.update_extra_selections()
             self._set_cursor(end_position)
         else:
             self._set_cursor(end_position, mode=QTextCursor.MoveAnchor)
@@ -762,7 +759,6 @@ class VimKeys(QObject):
             selection.cursor.setPosition(end_position,
                                              QTextCursor.KeepAnchor)
             editor.set_extra_selections('vim_visual', [selection])
-            editor.update_extra_selections()
             self._set_cursor(end_position)
 
 
@@ -855,7 +851,6 @@ class VimKeys(QObject):
             selection.cursor.setPosition(end_position+1,
                                              QTextCursor.KeepAnchor)
             editor.set_extra_selections('vim_visual', [selection])
-            editor.update_extra_selections()
             self._set_cursor(end_position+1)
 
     def A(self, repeat):
@@ -1207,7 +1202,6 @@ class VimKeys(QObject):
         selection.format.setForeground(back)
         selection.cursor = editor.textCursor()
         editor.set_extra_selections('vim_visual', [selection])
-        editor.update_extra_selections()
 
     def V(self, repeat):
         """Start Visual mode per line."""
@@ -1226,7 +1220,6 @@ class VimKeys(QObject):
         selection.cursor.movePosition(QTextCursor.Down,
                                       QTextCursor.KeepAnchor)
         editor.set_extra_selections('vim_visual', [selection])
-        editor.update_extra_selections()
 
     # TODO: CTRL + V sets visual mode to 'block'
     def gt(self, repeat):
@@ -1659,4 +1652,3 @@ class VimWidget(QWidget):
         selection.cursor.movePosition(QTextCursor.Right,
                                       QTextCursor.KeepAnchor)
         self.editor().set_extra_selections('vim_cursor', [selection])
-        self.editor().update_extra_selections()

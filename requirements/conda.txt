@@ -1,4 +1,4 @@
 qtawesome
 qtpy
 setuptools
-spyder>=5.2.2
+spyder>=5.3.3

@@ -76,7 +76,7 @@ class MainMock(QWidget):
         layout.addWidget(self.editor)
         self.setLayout(layout)
 
-    def get_plugin(self, dummy):
+    def get_plugin(self, dummy, error=True):
         return self.editor
 
     add_dockwidget = Mock()
