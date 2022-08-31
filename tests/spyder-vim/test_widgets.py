@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
+# ----------------------------------------------------------------------------
+# Copyright © 2022, spyder-vim
 #
-# Copyright © Spyder Project Contributors
-# Licensed under the terms of the MIT License
-#
-
-"""Tests for the plugin."""
-
+# Licensed under the terms of the MIT license
+# ----------------------------------------------------------------------------
+"""
+spyder-vim widget tests.
+"""
 # Standard library imports
 import os
 import os.path as osp
 
 # Test library imports
 import pytest
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock  # Python 2
+from unittest.mock import Mock
 
 # Qt imports
 from qtpy.QtCore import Qt, QPoint
@@ -26,19 +24,22 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 from spyder.plugins.editor.widgets.editor import EditorStack
 
 # Local imports
-from spyder_vim.vim import Vim
-from spyder_vim.vim_widget import RE_VIM_PREFIX
+from spyder_vim.spyder.plugin import SpyderVim
+from spyder_vim.spyder.widgets import RE_VIM_PREFIX
 
 
 LOCATION = osp.realpath(osp.join(
     os.getcwd(), osp.dirname(__file__)))
 
 
-class VimTesting(Vim):
-    CONF_FILE = False
+class VimTesting(SpyderVim):
 
-    def __init(self, parent):
-        Vim.__init__(self, parent)
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.on_editor_available()
+
+    def get_focus_widget(self):
+        return self.vim_cmd.commandline
 
 
 class EditorMock(QWidget):
@@ -75,6 +76,9 @@ class MainMock(QWidget):
         layout.addWidget(self.editor)
         self.setLayout(layout)
 
+    def get_plugin(self, dummy, error=True):
+        return self.editor
+
     add_dockwidget = Mock()
 
 
@@ -102,7 +106,7 @@ def vim_bot(editor_bot):
     """Create an spyder-vim plugin instance."""
     main, editor_stack, editor, qtbot = editor_bot
     vim = VimTesting(main)
-    vim.register_plugin()
+    vim.on_initialize()
     return main, editor_stack, editor, vim, qtbot
 
 
@@ -239,7 +243,6 @@ def test_cursor_position(vim_bot):
     cmd_line = vim.get_focus_widget()
     qtbot.keyClicks(cmd_line, '$a')
     qtbot.keyClicks(editor, 'test')
-    editor.stdkey_escape()
     text = editor.toPlainText()
     expected_text = ('   123\n'
                      'line 1\n'
@@ -2098,3 +2101,4 @@ def test_lessless_command(vim_bot, text, command_list, result, cursor_pos):
 
     assert editor.toPlainText() == result
     assert editor.textCursor().position() == cursor_pos
+

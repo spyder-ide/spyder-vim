@@ -5,7 +5,5 @@
 # Licensed under the terms of the MIT license
 # ----------------------------------------------------------------------------
 """
-Spyder Vim Plugin (spyder-vim).
+spyder-vim API.
 """
-
-__version__ = "0.1.0-dev0"
