@@ -8,7 +8,7 @@ In the commands below, replace `X.Y.Z` with the release version when needed.
 
 ## PyPI and GitHub
 
-You will need to have a local clone of the repo. The following steps supose a repo setup from a fork with and `upstream` remote pointing to the main `spyder-vim` repo
+You will need to have a local clone of the repo. The following steps suppose a repo setup from a fork with and `upstream` remote pointing to the main `spyder-vim` repo
 
 * Close [milestone on Github](https://github.com/spyder-ide/spyder-vim/milestones)
 
