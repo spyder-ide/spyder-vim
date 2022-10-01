@@ -46,7 +46,7 @@ pip install spyder-vim
 Using conda:
 
 ```
-conda install spyder-vim -c spyder-ide
+conda install spyder-vim -c conda-forge
 ```
 
 ## Dependencies
@@ -61,9 +61,7 @@ Visit our [CHANGELOG](CHANGELOG.md) file to know more about our new features and
 
 Do you want to request a new keybind for the plugin? Please submit it to our [Commands](https://github.com/spyder-ide/spyder-vim/issues/1) issue page. Feel free to open a PR to implement it.
 
-To start contributing to this project, you can execute ``pip install -U .`` to test your changes on Spyder. We follow PEP8 and PEP257 style guidelines.
-
-## Contributing
+To start contributing to the source code of this project, please check our [contributing guide](https://github.com/spyder-ide/spyder-vim/blob/master/CONTRIBUTING.md) to setup a development environment and be able to test your changes on Spyder. We follow PEP8 and PEP257 style guidelines.
 
 Everyone is welcome to contribute!
 
