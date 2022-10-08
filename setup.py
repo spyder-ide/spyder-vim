@@ -7,11 +7,17 @@
 """
 spyder-vim setup.
 """
+import io
 from setuptools import find_packages
 from setuptools import setup
 
 from spyder_vim import __version__
 
+# =============================================================================
+# Use Readme for long description
+# =============================================================================
+with io.open("README.md", encoding="utf-8") as f:
+    LONG_DESCRIPTION = f.read()
 
 setup(
     # See: https://setuptools.readthedocs.io/en/latest/setuptools.html
@@ -20,9 +26,11 @@ setup(
     author="Joseph Martinot-Lagarde and the spyder-vim contributors",
     author_email="spyder.python@gmail.com",
     description="A plugin to enable vim keybindings to the spyder editor",
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     license="MIT license",
     url="https://github.com/spyder-ide/spyder-vim",
-    python_requires='>= 3.7',
+    python_requires=">= 3.7",
     install_requires=[
         "qtpy",
         "qtawesome",
@@ -30,9 +38,7 @@ setup(
     ],
     packages=find_packages(),
     entry_points={
-        "spyder.plugins": [
-            "spyder_vim = spyder_vim.spyder.plugin:SpyderVim"
-        ],
+        "spyder.plugins": ["spyder_vim = spyder_vim.spyder.plugin:SpyderVim"],
     },
     classifiers=[
         "Operating System :: MacOS",
