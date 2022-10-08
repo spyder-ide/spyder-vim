@@ -35,19 +35,23 @@ Spyder Plugin for executing Vim commands inside the code editor. Although it doe
 
 ## Installation
 
-To install this plugin, you can use either ``pip`` or ``conda`` package managers, as it follows:
-
-Using pip:
-
-```
-pip install spyder-vim
-```
+To install this plugin, you can use either the ``conda`` or ``pip`` package managers, as it follows:
 
 Using conda:
 
 ```
 conda install spyder-vim -c conda-forge
 ```
+
+Using pip (only if you don't use Anaconda):
+
+```
+pip install spyder-vim
+```
+
+## Usage
+
+After installing Spyder-vim, you need to close Spyder and start it again, in case it's running, so that the plugin is loaded by it. Afterwards, you should see it at the bottom of the editor, as displayed in the animated screenshot above.
 
 ## Dependencies
 
