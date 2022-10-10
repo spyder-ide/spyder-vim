@@ -21,7 +21,7 @@
 
 Spyder Plugin for executing Vim commands inside the code editor. Although it does not currently support many VIM commands, it will be developed gradually.
 
-<img src="/doc/example.gif" width="600">
+<img src="https://raw.githubusercontent.com/spyder-ide/spyder-vim/master/doc/example.gif" width="600">
 
 | Category     | supported commands                                                            |
 | ------------ | ----------------------------------------------------------------------------- |

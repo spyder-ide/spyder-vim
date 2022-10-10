@@ -1,7 +1,12 @@
 ## Version 0.1.0 (2022-10-09)
 
+### New features
+
+* Initial release.
+
 ### Issues Closed
 
+* [Issue 78](https://github.com/spyder-ide/spyder-vim/issues/78) - Spyder Vim plugin maintenance and Spyder Vim 0.1.0 release
 * [Issue 76](https://github.com/spyder-ide/spyder-vim/issues/76) - Is Spyder-vim still under development? ([PR 77](https://github.com/spyder-ide/spyder-vim/pull/77) by [@ok97465](https://github.com/ok97465))
 * [Issue 75](https://github.com/spyder-ide/spyder-vim/issues/75) - Update plugin to be compatible with Spyder 5 ([PR 77](https://github.com/spyder-ide/spyder-vim/pull/77) by [@ok97465](https://github.com/ok97465))
 * [Issue 66](https://github.com/spyder-ide/spyder-vim/issues/66) - need to tweak c commands to end in insert mode ([PR 68](https://github.com/spyder-ide/spyder-vim/pull/68) by [@bgallois](https://github.com/bgallois))
@@ -14,6 +19,7 @@
 * [Issue 31](https://github.com/spyder-ide/spyder-vim/issues/31) - Rename files to follow plugins files naming conventions better ([PR 77](https://github.com/spyder-ide/spyder-vim/pull/77) by [@ok97465](https://github.com/ok97465))
 * [Issue 27](https://github.com/spyder-ide/spyder-vim/issues/27) - Consistent naming with other spyder plugins ([PR 30](https://github.com/spyder-ide/spyder-vim/pull/30) by [@andfoy](https://github.com/andfoy))
 * [Issue 24](https://github.com/spyder-ide/spyder-vim/issues/24) - Add tests to the project and CI Integration ([PR 30](https://github.com/spyder-ide/spyder-vim/pull/30) by [@andfoy](https://github.com/andfoy))
+* [Issue 21](https://github.com/spyder-ide/spyder-vim/issues/21) - Create a pypi package
 * [Issue 18](https://github.com/spyder-ide/spyder-vim/issues/18) - Cannot dd the last line
 * [Issue 14](https://github.com/spyder-ide/spyder-vim/issues/14) - When your cursor sits somewhere for too long, it disappears.
 * [Issue 13](https://github.com/spyder-ide/spyder-vim/issues/13) - When you yank a whole line, p (for "put" or "paste") should put the line on a new line. ([PR 16](https://github.com/spyder-ide/spyder-vim/pull/16) by [@pwoosam](https://github.com/pwoosam))
@@ -26,7 +32,7 @@
 * [Issue 3](https://github.com/spyder-ide/spyder-vim/issues/3) - Repeat actions with multiple digits
 * [Issue 2](https://github.com/spyder-ide/spyder-vim/issues/2) - Cursor in command mode
 
-In this release 23 issues were closed.
+In this release 25 issues were closed.
 
 ### Pull Requests Merged
 
