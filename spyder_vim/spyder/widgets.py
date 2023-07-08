@@ -1616,7 +1616,7 @@ class VimWidget(QWidget):
             return
         cmd_type = text[0]
         cmd = text[1::].rstrip()
-        if cmd_type == ":":  # Vim command
+        if cmd_type == ":" and 2 <= len(cmd):  # Vim command
             self.vim_commands(text[1:])
         elif cmd_type == "!":  # Shell command
             pass
