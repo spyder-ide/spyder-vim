@@ -1124,7 +1124,9 @@ class VimKeys(QObject):
 
     def p(self, repeat):
         """Paste line below current line, paste characters after cursor."""
+        register = self.register
         __, selection_state = self.get_register(register=self.register)
+        self.register = register
         if selection_state == 'line':
             self._move_cursor(QTextCursor.Down)
             self.P(repeat)
