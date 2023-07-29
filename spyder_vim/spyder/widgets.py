@@ -1133,9 +1133,9 @@ class VimKeys(QObject):
         elif selection_state == 'char':
             self._move_cursor(QTextCursor.Right)
             self.P(repeat)
-        else:
+        elif selection_state == 'block':
             # TODO: implement pasting block text after implementing visual mode
-            self.P()
+            pass
 
     def P(self, repeat):
         """Paste line above current line, paste characters before cursor."""
