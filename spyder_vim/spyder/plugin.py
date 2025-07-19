@@ -9,7 +9,7 @@ spyder-vim Plugin.
 """
 
 # Third-party imports
-from qtpy.QtCore import Qt, Signal
+from qtpy.QtCore import Qt
 from qtpy.QtGui import QIcon, QKeySequence
 from qtpy.QtWidgets import QShortcut
 
@@ -61,11 +61,12 @@ class SpyderVim(SpyderPluginV2):
         Set up interactions when Editor plugin available.
         """
         editor = self.get_plugin(Plugins.Editor)
-        self.vim_cmd = VimWidget(editor, self.main)
-        editor.layout().addWidget(self.vim_cmd)
+        widget = editor.get_widget()
+        self.vim_cmd = VimWidget(widget, self.main)
+        widget.layout().addWidget(self.vim_cmd)
         sc = QShortcut(
             QKeySequence("Esc"),
-            editor.editorsplitter,
+            widget.editorsplitter,
             self.vim_cmd.commandline.setFocus)
         sc.setContext(Qt.WidgetWithChildrenShortcut)
 
