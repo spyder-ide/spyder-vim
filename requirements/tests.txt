@@ -4,3 +4,4 @@ pytest-mock
 pytest-qt
 codecov
 flaky
+py
