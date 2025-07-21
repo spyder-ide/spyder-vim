@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "qtpy",
         "qtawesome",
-        "spyder>=5.3.3",
+        "spyder>=6.0.0",
     ],
     packages=find_packages(),
     entry_points={

@@ -21,7 +21,7 @@ from qtpy.QtGui import QTextCursor
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 # Spyder imports
-from spyder.plugins.editor.widgets.editor import EditorStack
+from spyder.plugins.editor.widgets.editorstack import EditorStack
 
 # Local imports
 from spyder_vim.spyder.plugin import SpyderVim
@@ -58,6 +58,9 @@ class EditorMock(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.editor_stack)
         self.setLayout(layout)
+    
+    def get_widget(self):
+        return self
 
     def get_current_editorstack(self):
         """Return EditorStack instance."""
