@@ -69,6 +69,11 @@ class SpyderVim(SpyderPluginV2):
             widget.editorsplitter,
             self.vim_cmd.commandline.setFocus)
         sc.setContext(Qt.WidgetWithChildrenShortcut)
+        sc2 = QShortcut(
+            QKeySequence(Qt.META + Qt.Key_BracketLeft),
+            editor.editorsplitter,
+            self.vim_cmd.commandline.setFocus)
+        sc2.setContext(Qt.WidgetWithChildrenShortcut)
 
     def check_compatibility(self):
         valid = True
