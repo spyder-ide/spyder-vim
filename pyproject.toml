@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "spyder_vim.__version__"}
+
+[project]
+name = "spyder-vim"
+dynamic = ["version"]
+description = "A plugin to enable vim keybindings to the spyder editor"
+readme = "README.md"
+authors = [
+    {name = "Joseph Martinot-Lagarde and the spyder-vim contributors", email = "spyder.python@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Text Editors :: Integrated Development Environments (IDE)",
+]
+requires-python = ">= 3.7"
+dependencies = [
+    "qtawesome",
+    "qtpy",
+    "spyder>=6.1.0,<7.0.0",
+]
+license = {text = "MIT license"}
+
+[project.urls]
+Homepage = "https://github.com/spyder-ide/spyder-vim"
+
+[project.entry-points."spyder.plugins"]
+spyder_vim = "spyder_vim.spyder.plugin:SpyderVim"
