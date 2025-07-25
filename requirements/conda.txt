@@ -2,4 +2,4 @@ qtawesome
 qtpy
 pip
 setuptools
-spyder>=6.0.0
+spyder>=6.1.0,<7
