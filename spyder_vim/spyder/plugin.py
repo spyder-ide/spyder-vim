@@ -46,10 +46,12 @@ class SpyderVim(SpyderPluginV2):
     def get_name():
         return _("spyder-vim")
 
-    def get_description(self):
+    @staticmethod
+    def get_description():
         return _("A plugin to enable vim keybindings to the spyder editor")
 
-    def get_icon(self):
+    @staticmethod
+    def get_icon():
         return QIcon()
 
     def on_initialize(self):
